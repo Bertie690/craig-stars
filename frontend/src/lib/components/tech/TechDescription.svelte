@@ -382,8 +382,7 @@
 					if (!hullComponent.scanRangePen) {
 						// we have no pen scan, but we are a normal scanner, we can still scan planets we orbit
 						descriptions.push(
-							"This scanner is capable of determining a planet's environment and composition (as well as any ships on said planet) while in orbit of it."
-						);
+							"This scanner is capable of determining a planet's environment and composition while orbiting it. It will also spot enemy fleets attempting to hide behind planets at the same location."
 					}
 
 					if ((hullComponent.scanRangePen ?? 0) > 0) {
@@ -402,7 +401,7 @@
 							target = 'fleets and planets';
 						}
 						descriptions.push(
-							`This scanner is also capable of penetrating the defenses of enemy ${target} allowing you to steal their cargo.`
+							`This scanner is also capable of penetrating the defenses of enemy ${target} allowing you to view and steal their cargo.`
 						);
 					}
 				}
