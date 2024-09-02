@@ -210,7 +210,9 @@ func (store *TechStore) GetBestPlanetaryScanner(player *Player) *TechPlanetarySc
 	for i := range store.PlanetaryScanners {
 		tech := &store.PlanetaryScanners[i]
 		if player.HasTech(&tech.Tech) {
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -222,7 +224,9 @@ func (store *TechStore) GetBestDefense(player *Player) *TechDefense {
 	for i := range store.Defenses {
 		tech := &store.Defenses[i]
 		if player.HasTech(&tech.Tech) {
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -233,14 +237,16 @@ func (store *TechStore) GetBestTerraform(player *Player, terraformHabType Terraf
 	for i := range store.Terraforms {
 		tech := &store.Terraforms[i]
 		if tech.HabType == terraformHabType && player.HasTech(&tech.Tech) {
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
 }
 
 // get the player's best battle engine 
-func (store *TechStore) GetBestBatrEngine(player *Player, hull *TechHull, purpose FleetPurpose) *TechEngine {
+func (store *TechStore) GetBestBattleEngine(player *Player, hull *TechHull, purpose FleetPurpose) *TechEngine {
 	bestTech := &store.Engines[1] // start from QJ5 instead of SD
 	for i := range store.Engines {
 		tech := &store.Engines[i]
@@ -250,7 +256,7 @@ func (store *TechStore) GetBestBatrEngine(player *Player, hull *TechHull, purpos
 				|| (len(tech.Requirements.HullsDenied) > 0 && slices.Contains(tech.Requirements.HullsDenied, hull.Name)) {
 				continue
 			}
-			// if engine had higher ideal speed than the current selection, use it
+			// if engine has higher ideal speed than the current selection, use it
 			// ties are broken by the part's rating (which leans towards cost & fuel efficiency)
 			if tech.idealSpeed > bestTech.idealSpeed ||
 				(tech.idealSpeed == bestTech.idealSpeed && tech.rating > bestTech.rating) {
@@ -276,12 +282,12 @@ func (store *TechStore) GetBestEngine(player *Player, hull *TechHull, purpose Fl
 			// colony ships don't want radiating engines if we would lose colonists from it 
 			if (purpose == FleetPurposeColonizer || purpose == FleetPurposeColonistFreighter) && tech.Radiating &&
 				!(player.Race.ImmuneRad || player.Race.Spec.HabCenter.Rad >= 85) {
-				// TODO: Add way to check against rules.RadiatingImmune threshold rather than the default value of 85
 				continue
 			}
 
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -293,8 +299,9 @@ func (store *TechStore) GetBestScanner(player *Player) *TechHullComponent {
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if tech.Scanner && (tech.ScanRange >= 0 || tech.ScanRangePen >= 0) && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -306,8 +313,9 @@ func (store *TechStore) GetBestBeamWeapon(player *Player) *TechHullComponent {
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if tech.Category == TechCategoryBeamWeapon && tech.Power > 0 && !tech.DamageShieldsOnly && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -319,12 +327,14 @@ func (store *TechStore) GetBestSapper(player *Player) *TechHullComponent {
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if tech.Category == TechCategoryBeamWeapon && tech.Power > 0 && tech.DamageShieldsOnly && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	// Use a regular beam if it's at least as strong
 	// than our best sapper (since they can damage armor)
+	// This is never possible in vanilla Stars!, but maybe for mods
 	if store.GetBestBeamWeapon(player).Power >= bestTech.Power
 		&& store.GetBestBeamWeapon(player).Cost.Resources <= bestTech.Cost.Resources
 		&& store.GetBestBeamWeapon(player).Range >= bestTech.Range {
@@ -340,8 +350,9 @@ func (store *TechStore) GetBestArmor(player *Player) *TechHullComponent {
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if tech.Category == TechCategoryArmor && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -353,8 +364,9 @@ func (store *TechStore) GetBestShield(player *Player) *TechHullComponent {
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if tech.Category == TechCategoryShield && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -366,8 +378,9 @@ func (store *TechStore) GetBestTorpedo(player *Player) *TechHullComponent {
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if tech.Category == TechCategoryTorpedo && tech.Power > 0 && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -379,8 +392,9 @@ func (store *TechStore) GetBestBomb(player *Player) *TechHullComponent {
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if tech.Category == TechCategoryBomb && tech.MinKillRate > 0 && tech.StructureDestroyRate > 0 && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -392,8 +406,9 @@ func (store *TechStore) GetBestStructureBomb(player *Player) *TechHullComponent 
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if tech.Category == TechCategoryBomb && tech.MinKillRate == 0 && tech.StructureDestroyRate > 0 && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+				if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -405,8 +420,9 @@ func (store *TechStore) GetBestSmartBomb(player *Player) *TechHullComponent {
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if tech.Category == TechCategoryBomb && tech.MinKillRate == 0 && tech.StructureDestroyRate == 0 && tech.KillRate > 0 && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -418,8 +434,9 @@ func (store *TechStore) GetBestFuelTank(player *Player) *TechHullComponent {
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if (tech.FuelBonus > 0) && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -431,8 +448,9 @@ func (store *TechStore) GetBestCargoPod(player *Player) *TechHullComponent {
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if (tech.CargoBonus > 0) && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -444,8 +462,9 @@ func (store *TechStore) GetBestColonizationModule(player *Player) *TechHullCompo
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if (tech.ColonizationModule || tech.OrbitalConstructionModule) && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -457,8 +476,9 @@ func (store *TechStore) GetBestBattleComputer(player *Player) *TechHullComponent
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if tech.InitiativeBonus > 0 && tech.torpedoInaccuracyMulti > 0 && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -470,8 +490,9 @@ func (store *TechStore) GetBestMiningRobot(player *Player) *TechHullComponent {
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if tech.Category == TechCategoryMineRobot && tech.MiningRate > 0 && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -483,8 +504,9 @@ func (store *TechStore) GetBestMineLayer(player *Player, mineFieldType MineField
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if tech.Category == TechCategoryMineLayer && tech.MineFieldType == mineFieldType && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -496,8 +518,9 @@ func (store *TechStore) GetBestPacketThrower(player *Player) *TechHullComponent 
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if tech.Category == TechCategoryOrbital && tech.PacketSpeed > 0 && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -509,8 +532,9 @@ func (store *TechStore) GetBestStargate(player *Player) *TechHullComponent {
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if tech.Category == TechCategoryOrbital && tech.SafeRange != 0 && player.HasTech(&tech.Tech) {
-			// techs are sorted by rank, so the latest is the best
-			bestTech = tech
+			if tech.Rating > bestTech.Rating {
+				bestTech = tech
+			}
 		}
 	}
 	return bestTech
@@ -519,7 +543,7 @@ func (store *TechStore) GetBestStargate(player *Player) *TechHullComponent {
 // TechEngines
 var SettlersDelight = TechEngine{
 	TechHullComponent: TechHullComponent{Tech: NewTech("Settler's Delight", NewCost(1, 0, 1, 2), TechRequirements{PRTsRequired: []PRT{HE}, HullsAllowed: []string{MiniColonyShip.Name}}, 69, TechCategoryEngine), Mass: 2, HullSlotType: HullSlotTypeEngine},
-	// better than Radram, AD8 and Mizer, 
+	// better than Radram, AD8 and Mizer (mainly due to sheer cheapness)
 	Engine: Engine{
 		IdealSpeed:   6,
 		FreeSpeed:    6,
