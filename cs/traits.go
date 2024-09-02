@@ -71,7 +71,7 @@ type LRTSpec struct {
 	ScanRangeFactorOffset         float64         `json:"scanRangeFactorOffset,omitempty"`
 	FuelEfficiencyOffset          float64         `json:"fuelEfficiencyOffset,omitempty"`
 	MaxPopulationOffset           float64         `json:"maxPopulationOffset,omitempty"`
-	TerraformCostOffset           Cost            `json:"terraformCostOffset,omitempty"`
+	TerraformCostOffset           float64         `json:"terraformCostOffset,omitempty"`
 	MineralAlchemyCostOffset      int             `json:"mineralAlchemyCostOffset,omitempty"`
 	ScrapMineralOffset            float64         `json:"scrapMineralOffset,omitempty"`
 	ScrapMineralOffsetStarbase    float64         `json:"scrapMineralOffsetStarbase,omitempty"`
@@ -468,7 +468,7 @@ func ifeSpec() LRTSpec {
 
 func ttSpec() LRTSpec {
 	return LRTSpec{
-		TerraformCostOffset: Cost{Resources: -30},
+		TerraformCostOffset: -0.3
 	}
 }
 
