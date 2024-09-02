@@ -862,35 +862,35 @@ var GalaxyScoop = TechEngine{
 
 // TechTerraforms
 
-var TotalTerraform3 = TechTerraform{Tech: NewTech("Total Terraform ±3", NewCost(0, 0, 0, 70), TechRequirements{TechLevel: TechLevel{}, LRTsRequired: TT}, 0, TechCategoryTerraforming),
+var TotalTerraform3 = TechTerraform{Tech: NewTech("Total Terraform ±3", NewCost(0, 0, 0, 100), TechRequirements{TechLevel: TechLevel{}, LRTsRequired: TT}, 0, TechCategoryTerraforming),
 	Ability: 3,
 	HabType: TerraformHabTypeAll,
 }
-var TotalTerraform5 = TechTerraform{Tech: NewTech("Total Terraform ±5", NewCost(0, 0, 0, 70), TechRequirements{TechLevel: TechLevel{Biotechnology: 3}, LRTsRequired: TT}, 10, TechCategoryTerraforming),
+var TotalTerraform5 = TechTerraform{Tech: NewTech("Total Terraform ±5", NewCost(0, 0, 0, 100), TechRequirements{TechLevel: TechLevel{Biotechnology: 3}, LRTsRequired: TT}, 10, TechCategoryTerraforming),
 	Ability: 5,
 	HabType: TerraformHabTypeAll,
 }
-var TotalTerraform7 = TechTerraform{Tech: NewTech("Total Terraform ±7", NewCost(0, 0, 0, 70), TechRequirements{TechLevel: TechLevel{Biotechnology: 6}, LRTsRequired: TT}, 20, TechCategoryTerraforming),
+var TotalTerraform7 = TechTerraform{Tech: NewTech("Total Terraform ±7", NewCost(0, 0, 0, 100), TechRequirements{TechLevel: TechLevel{Biotechnology: 6}, LRTsRequired: TT}, 20, TechCategoryTerraforming),
 	Ability: 7,
 	HabType: TerraformHabTypeAll,
 }
-var TotalTerraform10 = TechTerraform{Tech: NewTech("Total Terraform ±10", NewCost(0, 0, 0, 70), TechRequirements{TechLevel: TechLevel{Biotechnology: 9}, LRTsRequired: TT}, 30, TechCategoryTerraforming),
+var TotalTerraform10 = TechTerraform{Tech: NewTech("Total Terraform ±10", NewCost(0, 0, 0, 100), TechRequirements{TechLevel: TechLevel{Biotechnology: 9}, LRTsRequired: TT}, 30, TechCategoryTerraforming),
 	Ability: 10,
 	HabType: TerraformHabTypeAll,
 }
-var TotalTerraform15 = TechTerraform{Tech: NewTech("Total Terraform ±15", NewCost(0, 0, 0, 70), TechRequirements{TechLevel: TechLevel{Biotechnology: 13}, LRTsRequired: TT}, 40, TechCategoryTerraforming),
+var TotalTerraform15 = TechTerraform{Tech: NewTech("Total Terraform ±15", NewCost(0, 0, 0, 100), TechRequirements{TechLevel: TechLevel{Biotechnology: 13}, LRTsRequired: TT}, 40, TechCategoryTerraforming),
 	Ability: 15,
 	HabType: TerraformHabTypeAll,
 }
-var TotalTerraform20 = TechTerraform{Tech: NewTech("Total Terraform ±20", NewCost(0, 0, 0, 70), TechRequirements{TechLevel: TechLevel{Biotechnology: 17}, LRTsRequired: TT}, 50, TechCategoryTerraforming),
+var TotalTerraform20 = TechTerraform{Tech: NewTech("Total Terraform ±20", NewCost(0, 0, 0, 100), TechRequirements{TechLevel: TechLevel{Biotechnology: 17}, LRTsRequired: TT}, 50, TechCategoryTerraforming),
 	Ability: 20,
 	HabType: TerraformHabTypeAll,
 }
-var TotalTerraform25 = TechTerraform{Tech: NewTech("Total Terraform ±25", NewCost(0, 0, 0, 70), TechRequirements{TechLevel: TechLevel{Biotechnology: 22}, LRTsRequired: TT}, 60, TechCategoryTerraforming),
+var TotalTerraform25 = TechTerraform{Tech: NewTech("Total Terraform ±25", NewCost(0, 0, 0, 100), TechRequirements{TechLevel: TechLevel{Biotechnology: 22}, LRTsRequired: TT}, 60, TechCategoryTerraforming),
 	Ability: 25,
 	HabType: TerraformHabTypeAll,
 }
-var TotalTerraform30 = TechTerraform{Tech: NewTech("Total Terraform ±30", NewCost(0, 0, 0, 70), TechRequirements{TechLevel: TechLevel{Biotechnology: 25}, LRTsRequired: TT}, 70, TechCategoryTerraforming),
+var TotalTerraform30 = TechTerraform{Tech: NewTech("Total Terraform ±30", NewCost(0, 0, 0, 100), TechRequirements{TechLevel: TechLevel{Biotechnology: 25}, LRTsRequired: TT}, 70, TechCategoryTerraforming),
 	Ability: 30,
 	HabType: TerraformHabTypeAll,
 }
