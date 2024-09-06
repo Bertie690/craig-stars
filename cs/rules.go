@@ -59,6 +59,7 @@ type Rules struct {
 	MaxMineralConcentration                   int                                 `json:"maxMineralConcentration"`
 	MinStartingMineralConcentration           int                                 `json:"minStartingMineralConcentration"`
 	MaxStartingMineralConcentration           int                                 `json:"maxStartingMineralConcentration"`
+	LimitMineralConcentration                 int                                 `json:"limitMineralConcentration"`
 	HighRadMineralConcentrationBonusThreshold int                                 `json:"highRadGermaniumBonusThreshold"`
 	RadiatingImmune                           int                                 `json:"radiatingImmune"`
 	MaxStartingMineralSurface                 int                                 `json:"maxStartingMineralSurface"`
@@ -460,8 +461,9 @@ func NewRulesWithSeed(seed int64) Rules {
 		MaxMineralConcentration:                   200,
 		MinHab:                                    1,
 		MaxHab:                                    99,
-		MinStartingMineralConcentration:           31,
+		MinStartingMineralConcentration:           1,
 		MaxStartingMineralConcentration:           121,
+		LimitMineralConcentration:                 30,
 		HighRadMineralConcentrationBonusThreshold: 90,
 		MaxStartingMineralSurface:                 1000,
 		MinStartingMineralSurface:                 300,

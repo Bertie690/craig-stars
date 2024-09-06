@@ -1,5 +1,5 @@
 //go:build wasi || wasm
-// code heavily inspired by golang-wasm
+//code heavily inspired by golang-wasm
 package wasm
 
 import (

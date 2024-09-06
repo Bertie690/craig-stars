@@ -140,7 +140,7 @@ const (
 
 func defaultPRTSpec() PRTSpec {
 	return PRTSpec{
-		StartingPlanets: []StartingPlanet{{Population: 25000, StarbaseHull: SpaceStation.Name, StarbaseDesignName: "Starbase"}, Homeworld: true},
+		StartingPlanets: []StartingPlanet{{Population: 25000, StarbaseHull: SpaceStation.Name, StarbaseDesignName: "Starbase", Homeworld: true},},
 
 		PointCost:                        66,
 		MineralsPerSingleMineralPacket:   100,
@@ -469,8 +469,8 @@ func ifeSpec() LRTSpec {
 func ttSpec() LRTSpec {
 	return LRTSpec{
 		TechCostOffset: TechCostOffset{
-			TerraformCostOffset: -.3 // terraformint costs 30% less
-		}
+			Terraforming: -.3, // terraforming costs 30% less
+		},
 	}
 }
 
@@ -501,8 +501,9 @@ func grSpec() LRTSpec {
 func urSpec() LRTSpec {
 	return LRTSpec{
 		// UR gives us 45%/90% of scrapped minerals, versus 33%/80% for races without UR
+		// TODO: Rework scrapping in non-jank way
 		ScrapMineralOffset:           .45 - (1.0 / 3),
-		ScrapMineralOffsetStarbase:   .9 - (10 / 8)
+		ScrapMineralOffsetStarbase:   .9 - (1.0 / 3),
 		ScrapResourcesOffset:         .35,
 		ScrapResourcesOffsetStarbase: .7,
 	}
