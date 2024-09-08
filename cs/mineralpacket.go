@@ -375,7 +375,7 @@ func (packet *MineralPacket) checkPermaform(rules *Rules, player *Player, planet
 				}
 			}
 
-			if result.Terraformed() {
+			if direction != 0 {
 				messager.planetPacketPermaform(player, planet, habType, direction)
 			}
 		}

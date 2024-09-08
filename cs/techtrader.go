@@ -6,6 +6,12 @@ import "math"
 type techTrader interface {
 	// Return the tech field gained for this tech trade event, if any
 	techLevelGained(rules *Rules, current, target TechLevel) TechField
+
+	// Return if an MT part was gained for this tech trade event
+	//
+	// Does not take a part as an argument as the only way MT parts can be transferred
+	// is if a ship with one dies in battle or is scrapped
+	mtPartGained(rules *Rules, numItems int) bool
 }
 
 type techTrade struct {
@@ -35,6 +41,21 @@ func (t *techTrade) techLevelGained(rules *Rules, current, target TechLevel) Tec
 	}
 
 	return TechFieldNone
+}
+
+func (t *techTrade) mtPartGained(rules *Rules, numItems int) bool {
+	if numItems <= 0 {
+		return false
+	} else if numItems > 25 {
+		// maximum of 25 items per check
+		numItems = 25
+	}
+
+	chance := rules.MysteryTraderRules.MysteryPartTradeChance * rules.TechTradeChance * float64(numItems)
+	if chance > rules.random.Float64() {
+		return true
+	}
+	return false
 }
 
 // get the chance of a tech trade. If we are one level above this is:

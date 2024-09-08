@@ -49,6 +49,8 @@ func (t *turn) generateTurn() error {
 		player.Messages = []PlayerMessage{}
 		player.BattleRecords = []BattleRecord{}
 		player.leftoverResources = 0
+		player.techLevelGained = false
+		player.mtPartGained = false
 		player.Race.Spec = computeRaceSpec(&player.Race, &t.game.Rules) // this isn't necessary when the game is complete, but if I add features (like scanner cost) this will pick it up
 		player.Spec = computePlayerSpec(player, &t.game.Rules, t.game.Planets)
 	}
@@ -172,29 +174,35 @@ func (t *turn) fleetScrap() {
 
 		wp0 := fleet.Waypoints[0]
 		if wp0.Task == WaypointTaskScrapFleet {
-			t.scrapFleet(fleet)
+			t.scrapFleet(fleet, false)
 		}
 	}
 }
 
 // scrap a fleet giving a planet resources or creating salvage
-func (t *turn) scrapFleet(fleet *Fleet) {
+func (t *turn) scrapFleet(fleet *Fleet, colonize bool) {
 	player := t.game.getPlayer(fleet.PlayerNum)
 	planet := t.game.getOrbitingPlanet(fleet)
 
-	cost := fleet.getScrapAmount(&t.game.Rules, player, planet)
+	cost := fleet.getScrapAmount(&t.game.Rules, player, planet, colonize)
 
 	if planet != nil {
 		// scrap over a planet
 		planet.Cargo = planet.Cargo.AddCostMinerals(cost)
-		planet.Cargo = planet.Cargo.AddMineral(fleet.Cargo.ToMineral())
+		// UR bonus resources only come into play for normal scrapping
+		// but fleet.getScrapAmount already sets it to 0 regardless
+		planet.bonusResources += cost.Resources
 		if planet.OwnedBy(player.Num) {
-			planet.bonusResources += cost.Resources
+			// add colonists to planet cargo if it's our own planet
+			planet.Cargo = planet.Cargo.Add(fleet.Cargo)
+		} else {
+			// if not our planet, only the minerals in cargo get transferred (bye bye colonists)
+			planet.Cargo = planet.Cargo.AddMineral(fleet.Cargo.ToMineral())
 		}
 
 		// check for tech trade. We do this for every fleet. If it's the player's original ships, it won't lead
 		// to a tech trade because they obviously have the tech levels required to build
-		// the ship, but if a ship in the fleet was gifted to theplayer and we scrap it over their
+		// the ship, but if a ship in the fleet was gifted to the player and we scrap it over their
 		// own planet they might gain tech from it
 		if planet.Owned() && planet.Spec.HasStarbase {
 			planetPlayer := t.game.getPlayer(planet.PlayerNum)
@@ -224,6 +232,58 @@ func (t *turn) scrapFleet(fleet *Fleet) {
 							Msgf("gained tech level from scrapped fleet")
 
 						break
+					}
+				}
+			}
+
+			if !planetPlayer.mtPartGained {
+				var mysteryTraderParts map[*Tech]int
+				var mtPartsPresent []*Tech
+				for _, token := range fleet.Tokens {
+					// make copy of token design's slots for MT part checking
+					slots := slices.Clone(token.design.Slots)
+					// iterate through the token's slots and remove any not explicitly from the MT
+					slots = slices.DeleteFunc(slots, func(slot ShipDesignSlot) bool {
+						tech := t.game.Rules.techs.GetHullComponent(slot.HullComponent).Tech
+						return tech.Origin != OriginMysteryTrader
+					})
+
+					for _, slot := range slots {
+						if slot.Quantity == 0 { // indicates field has been zeroed out by slices.DeleteFunc
+							continue
+						}
+						tech := t.game.Rules.techs.GetHullComponent(slot.HullComponent).Tech
+						mtPartsPresent = append(mtPartsPresent, &tech)
+						mysteryTraderParts[&tech] += slot.Quantity * token.Quantity
+					}
+
+					hull := t.game.Rules.techs.GetHull(token.design.Hull).Tech
+					if hull.Origin == OriginMysteryTrader {
+						mysteryTraderParts[&hull] += token.Quantity
+					}
+				}
+
+				// check for MT tech trades
+				if len(mtPartsPresent) > 0 {
+					// at least one MT part was present on the dead tokens; trading time!!!
+
+					techTrader := newTechTrader()
+					// randomize tech list to remove bias
+					t.game.Rules.random.Shuffle(len(mtPartsPresent), func(i, j int) { mtPartsPresent[i], mtPartsPresent[j] = mtPartsPresent[j], mtPartsPresent[i] })
+					for _, tech := range mtPartsPresent {
+						qty := mysteryTraderParts[tech]
+						if techTrader.mtPartGained(&t.game.Rules, qty) &&
+							!planetPlayer.AcquiredTechs[tech.Name] {
+							planetPlayer.AcquiredTechs[tech.Name] = true
+							planetPlayer.mtPartGained = true
+							t.log.Debug().
+								Int("Player", planetPlayer.Num).
+								Str("Planet", planet.Name).
+								Str("Fleet", fleet.Name).
+								Str("Tech", tech.Name).
+								Msgf("gained MT part from scrapping")
+							messager.playerMysteryTechGainedScrappedFleet(planetPlayer, planet, fleet.Name, tech.Name)
+						}
 					}
 				}
 			}
@@ -304,7 +364,7 @@ func (t *turn) fleetColonize() {
 
 			// colonize the planet and scrap the fleet
 			fleet.colonizePlanet(&t.game.Rules, player, planet)
-			t.scrapFleet(fleet)
+			t.scrapFleet(fleet, true)
 			messager.planetColonized(player, planet)
 		}
 	}
@@ -1982,17 +2042,47 @@ func (t *turn) fleetBattle() {
 
 			}
 
-			// figure out how much salvage this generates
 			var highestTechLevel TechLevel
 			destroyedCost := Cost{}
 			salvageOwner := 1
+			var mysteryTraderParts map[*Tech]int
+			var mtPartsPresent []*Tech
 			for _, token := range record.DestroyedTokens {
+				// figure out how much salvage this generates
 				destroyedCost = destroyedCost.Add(token.design.Spec.Cost.MultiplyInt(token.Quantity))
 				// TODO: who owns this salvage if there are destroyed ships from different players?
 				salvageOwner = token.PlayerNum
 
-				// record it's tech level for tech trading
+				// record its tech level for tech trading
 				highestTechLevel = highestTechLevel.Max(token.design.Spec.TechLevel)
+
+				if t.game.getPlayer(token.PlayerNum).mtPartGained {
+					// if we already got a part this turn, skip everything else
+					continue
+				}
+
+				// make copy of token design's slots for MT part checking
+				slots := slices.Clone(token.design.Slots)
+				// iterate through the token's slots and remove any not explicitly from the MT
+				slots = slices.DeleteFunc(slots, func(slot ShipDesignSlot) bool {
+					tech := t.game.Rules.techs.GetHullComponent(slot.HullComponent).Tech
+					return tech.Origin != OriginMysteryTrader
+				})
+
+				for _, slot := range slots {
+					if slot.Quantity == 0 { // indicates field has been zeroed out by slices.DeleteFunc
+						continue
+					}
+					tech := t.game.Rules.techs.GetHullComponent(slot.HullComponent).Tech
+					mtPartsPresent = append(mtPartsPresent, &tech)
+					mysteryTraderParts[&tech] += slot.Quantity * token.Quantity
+				}
+
+				hull := t.game.Rules.techs.GetHull(token.design.Hull).Tech
+				if hull.Origin == OriginMysteryTrader {
+					mysteryTraderParts[&hull] += token.Quantity
+				}
+
 			}
 			salvageMinerals := destroyedCost.MultiplyFloat64(t.game.Rules.SalvageFromBattleFactor).ToMineral()
 
@@ -2136,6 +2226,28 @@ func (t *turn) fleetBattle() {
 						Str("field", string(field)).
 						Msgf("gained tech level from battle")
 
+				}
+
+				// check for MT tech trades
+				if len(mtPartsPresent) > 0 && !player.mtPartGained {
+					// at least one MT part was present on the dead tokens; trading time!!!
+
+					// randomize tech list to remove bias
+					t.game.Rules.random.Shuffle(len(mtPartsPresent), func(i, j int) { mtPartsPresent[i], mtPartsPresent[j] = mtPartsPresent[j], mtPartsPresent[i] })
+					for _, tech := range mtPartsPresent {
+						qty := mysteryTraderParts[tech]
+						if techTrader.mtPartGained(&t.game.Rules, qty) &&
+							!player.AcquiredTechs[tech.Name] {
+							player.AcquiredTechs[tech.Name] = true
+							player.mtPartGained = true
+							t.log.Debug().
+								Int("Battle", battleNum).
+								Int("Player", player.Num).
+								Str("tech", tech.Name).
+								Msgf("gained MT part from battle")
+							messager.playerMysteryTechGainedBattle(player, planet, record, tech.Name)
+						}
+					}
 				}
 			}
 

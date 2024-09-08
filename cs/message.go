@@ -27,7 +27,7 @@ type PlayerMessage struct {
 }
 
 // The PlayerMessageSpec contains data specific to each message, like the amount of mines built
-// of the field of research leveled up in.
+// or the field of research leveled up in.
 type PlayerMessageSpec struct {
 	// the thing being targeted by the message target, i.e. the planet for a fleet bombed a planet message
 	Target[MapObjectType]
@@ -171,6 +171,8 @@ const (
 	PlayerMessagePlayerTechLevelGainedInvasion
 	PlayerMessagePlayerTechLevelGainedScrapFleet
 	PlayerMessagePlayerTechLevelGainedBattle
+	PlayerMessagePlayerMysteryTechGainedScrapFleet
+	PlayerMessagePlayerMysteryTechGainedBattle
 	PlayerMessageFleetDieoff
 	PlayerMessageBattleAlly
 	PlayerMessageBattleReports
@@ -969,6 +971,16 @@ func (m *messageClient) playerTechGainedInvasion(player *Player, planet *Planet,
 func (m *messageClient) playerTechGainedScrappedFleet(player *Player, planet *Planet, fleetName string, field TechField) {
 	player.Messages = append(player.Messages, newPlanetMessage(PlayerMessagePlayerTechLevelGainedScrapFleet, planet).
 		withSpec(PlayerMessageSpec{Field: field, Name: fleetName}))
+}
+
+func (m *messageClient) playerMysteryTechGainedBattle(player *Player, planet *Planet, record *BattleRecord, tech string) {
+	player.Messages = append(player.Messages, newBattleMessage(PlayerMessagePlayerMysteryTechGainedScrapFleet, planet, record).
+		withSpec(PlayerMessageSpec{TechGained: tech}))
+}
+
+func (m *messageClient) playerMysteryTechGainedScrappedFleet(player *Player, planet *Planet, fleetName string, tech string) {
+	player.Messages = append(player.Messages, newPlanetMessage(PlayerMessagePlayerMysteryTechGainedScrapFleet, planet).
+		withSpec(PlayerMessageSpec{TechGained: tech, Name: fleetName}))
 }
 
 // tell a player they are dead. This always appears as the first message
