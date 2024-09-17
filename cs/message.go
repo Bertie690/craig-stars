@@ -171,8 +171,6 @@ const (
 	PlayerMessagePlayerTechLevelGainedInvasion
 	PlayerMessagePlayerTechLevelGainedScrapFleet
 	PlayerMessagePlayerTechLevelGainedBattle
-	PlayerMessagePlayerMysteryTechGainedScrapFleet
-	PlayerMessagePlayerMysteryTechGainedBattle
 	PlayerMessageFleetDieoff
 	PlayerMessageBattleAlly
 	PlayerMessageBattleReports
@@ -183,6 +181,9 @@ const (
 	PlayerMessageMysteryTraderMetWithoutReward
 	PlayerMessageMysteryTraderAlreadyRewarded
 	PlayerMessagePlanetBuiltGenesisDevice
+	PlayerMessagePlayerAcquirablePartGainedScrapFleet
+	PlayerMessagePlayerAcquirablePartGainedBattle
+
 )
 
 func newMessage(messageType PlayerMessageType) PlayerMessage {
@@ -973,13 +974,13 @@ func (m *messageClient) playerTechGainedScrappedFleet(player *Player, planet *Pl
 		withSpec(PlayerMessageSpec{Field: field, Name: fleetName}))
 }
 
-func (m *messageClient) playerMysteryTechGainedBattle(player *Player, planet *Planet, record *BattleRecord, tech string) {
-	player.Messages = append(player.Messages, newBattleMessage(PlayerMessagePlayerMysteryTechGainedScrapFleet, planet, record).
+func (m *messageClient) playerAcquirablePartGainedBattle(player *Player, planet *Planet, record *BattleRecord, tech string) {
+	player.Messages = append(player.Messages, newBattleMessage(PlayerMessagePlayerAcquirablePartGainedScrapFleet, planet, record).
 		withSpec(PlayerMessageSpec{TechGained: tech}))
 }
 
-func (m *messageClient) playerMysteryTechGainedScrappedFleet(player *Player, planet *Planet, fleetName string, tech string) {
-	player.Messages = append(player.Messages, newPlanetMessage(PlayerMessagePlayerMysteryTechGainedScrapFleet, planet).
+func (m *messageClient) playerAcquirablePartGainedScrappedFleet(player *Player, planet *Planet, fleetName string, tech string) {
+	player.Messages = append(player.Messages, newPlanetMessage(PlayerMessagePlayerAcquirablePartGainedScrapFleet, planet).
 		withSpec(PlayerMessageSpec{TechGained: tech, Name: fleetName}))
 }
 

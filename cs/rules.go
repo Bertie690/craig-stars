@@ -17,6 +17,8 @@ type Rules struct {
 	CreatedAt                        time.Time                           `json:"createdAt"`
 	UpdatedAt                        time.Time                           `json:"updatedAt"`
 	GameID                           int64                               `json:"gameId"`
+	AcquirablePartTradeChanceBase    float64                             `json:"AcquirablePartTradeChanceBase"`
+	AcquirablePartTradeItemMax       int                                 `json:"acquirablePartTradeItemMax"`
 	CometStatsBySize                 map[CometSize]CometStats            `json:"cometStatsBySize,omitempty"`
 	FleetSafeSpeedExplosionChance    float64                             `json:"fleetSafeSpeedExplosionChance"`
 	InvasionDefenseCoverageFactor    float64                             `json:"invasionDefenseCoverageFactor"`
@@ -154,20 +156,19 @@ const (
 )
 
 type MysteryTraderRules struct {
-	ChanceSpawn            []int                        `json:"chanceSpawn,omitempty"`
-	ChanceMaxTechGetsPart  int                          `json:"chanceMaxTechGetsPart"`
-	ChanceCourseChange     int                          `json:"chanceCourseChange"`
-	ChanceSpeedUpOnly      int                          `json:"chanceSpeedUpOnly"`
-	ChanceAgain            int                          `json:"chanceAgain"`
-	EvenYearOnly           bool                         `json:"evenYearOnly,omitempty"`
-	GenesisDeviceCost      Cost                         `json:"genesisDeviceCost"`
-	MaxMysteryTraders      int                          `json:"maxMysteryTraders,omitempty"`
-	MaxWarp                int                          `json:"maxWarp,omitempty"`
-	MinWarp                int                          `json:"minWarp,omitempty"`
-	MinYear                int                          `json:"minYear,omitempty"`
-	MysteryPartTradeChance float64                      `json:"mysteryPartTradeChance,omitempty"`
-	RequestedBoon          int                          `json:"requestedBoon,omitempty"`
-	TechBoon               []MysteryTraderTechBoonRules `json:"techBoon,omitempty"`
+	ChanceSpawn           []int                        `json:"chanceSpawn,omitempty"`
+	ChanceMaxTechGetsPart int                          `json:"chanceMaxTechGetsPart"`
+	ChanceCourseChange    int                          `json:"chanceCourseChange"`
+	ChanceSpeedUpOnly     int                          `json:"chanceSpeedUpOnly"`
+	ChanceAgain           int                          `json:"chanceAgain"`
+	EvenYearOnly          bool                         `json:"evenYearOnly,omitempty"`
+	GenesisDeviceCost     Cost                         `json:"genesisDeviceCost"`
+	MaxMysteryTraders     int                          `json:"maxMysteryTraders,omitempty"`
+	MaxWarp               int                          `json:"maxWarp,omitempty"`
+	MinWarp               int                          `json:"minWarp,omitempty"`
+	MinYear               int                          `json:"minYear,omitempty"`
+	RequestedBoon         int                          `json:"requestedBoon,omitempty"`
+	TechBoon              []MysteryTraderTechBoonRules `json:"techBoon,omitempty"`
 }
 
 type MysteryTraderTechBoonRules struct {
@@ -310,6 +311,8 @@ func NewRulesWithSeed(seed int64) Rules {
 			RandomEventPlanetaryChange: .05,
 			RandomEventAncientArtifact: .33, // 1 in 3 planets have random artifacts
 		},
+		AcquirablePartTradeChanceBase: 0.01, // 1% chance per item in fleet
+		AcquirablePartTradeItemMax:    25,   // 25 items max per trade instance
 		RandomCometMinYear:            10,
 		RandomCometMinYearPlayerWorld: 20,
 		CometStatsBySize: map[CometSize]CometStats{
@@ -370,19 +373,18 @@ func NewRulesWithSeed(seed int64) Rules {
 		RandomArtifactResearchBonusRange: [2]int{120, 400},
 		MysteryTraderRules: MysteryTraderRules{
 			// ChanceSpawn:      []int{1}, // force it
-			ChanceSpawn:            []int{7, 7, 7, 7, 7, 7, 7, 4, 4, 3, 2}, // randomly pick a random chance to spawn an MT. It's not the same every turn
-			ChanceMaxTechGetsPart:  5,                                      // 1 in 5 chance a player with max tech gets a part if they get a research trader
-			ChanceCourseChange:     20,                                     // 1 in 20 chance the MT speeds up/changes course
-			ChanceSpeedUpOnly:      3,                                      // if change course, 1 in 3 chance it's speed up only
-			ChanceAgain:            2,                                      // 1 in 2 chance an MT makes another trip through the universe
-			EvenYearOnly:           true,                                   // true for only spawning mystery traders during even years
-			GenesisDeviceCost:      Cost{0, 0, 0, 5000},                    // no miniaturization, always costs this much
-			MaxMysteryTraders:      5,                                      // the maximum number of mystery traders spawned in a universe at one time
-			MaxWarp:                13,                                     // the fastest warp a mystery trader will go
-			MinWarp:                7,                                      // the slowest warp a mystery trader will go
-			MinYear:                40,                                     // the earliest year a mystery trader will spawn
-			MysteryPartTradeChance: 0.01,                                   // the chance for an MT part to be traded per item present on a fleet (not counting normal fail chance)
-			RequestedBoon:          5000,                                   // how many minerals a player must give the MT to get a reward
+			ChanceSpawn:           []int{7, 7, 7, 7, 7, 7, 7, 4, 4, 3, 2}, // randomly pick a random chance to spawn an MT. It's not the same every turn
+			ChanceMaxTechGetsPart: 5,                                      // 1 in 5 chance a player with max tech gets a part if they get a research trader
+			ChanceCourseChange:    20,                                     // 1 in 20 chance the MT speeds up/changes course
+			ChanceSpeedUpOnly:     3,                                      // if change course, 1 in 3 chance it's speed up only
+			ChanceAgain:           2,                                      // 1 in 2 chance an MT makes another trip through the universe
+			EvenYearOnly:          true,                                   // true for only spawning mystery traders during even years
+			GenesisDeviceCost:     Cost{0, 0, 0, 5000},                    // no miniaturization, always costs this much
+			MaxMysteryTraders:     5,                                      // the maximum number of mystery traders spawned in a universe at one time
+			MaxWarp:               13,                                     // the fastest warp a mystery trader will go
+			MinWarp:               7,                                      // the slowest warp a mystery trader will go
+			MinYear:               40,                                     // the earliest year a mystery trader will spawn
+			RequestedBoon:         5000,                                   // how many minerals a player must give the MT to get a reward
 			TechBoon: []MysteryTraderTechBoonRules{
 				{
 					TechLevels: 59,
@@ -547,7 +549,7 @@ func NewRulesWithSeed(seed int64) Rules {
 		ScrapMineralAmount:         0.333333343,
 		ScrapResourceAmount:        0.0,
 		ScrapColonizeAmount:        0.75,
-		SalvageFromBattleFactor: .3,
+		SalvageFromBattleFactor:    .3,
 		PacketDecayRate: map[int]float64{
 			1: 0.1,
 			2: 0.25,
