@@ -48,6 +48,7 @@ type Rules struct {
 	SalvageDecayMin                  int                                 `json:"salvageDecayMin"`
 	SalvageDecayRate                 float64                             `json:"salvageDecayRate"`
 	SalvageFromBattleFactor          float64                             `json:"salvageFromBattleFactor"`
+	ScrapColonizeAmount              float64                             `json:"scrapColonizeAmount"`
 	ScrapMineralAmount               float64                             `json:"scrapMineralAmount"`
 	ScrapResourceAmount              float64                             `json:"scrapResourceAmount"`
 	ShowPublicScoresAfterYears       int                                 `json:"showPublicScoresAfterYears"`
@@ -545,7 +546,7 @@ func NewRulesWithSeed(seed int64) Rules {
 		RaceStartingPoints:         1650,
 		ScrapMineralAmount:         0.333333343,
 		ScrapResourceAmount:        0.0,
-
+		ScrapColonizeAmount:        0.75,
 		SalvageFromBattleFactor: .3,
 		PacketDecayRate: map[int]float64{
 			1: 0.1,
@@ -554,7 +555,6 @@ func NewRulesWithSeed(seed int64) Rules {
 		},
 		PacketMinDecay: 10,
 		MaxTechLevel:   26,
-
 		PRTSpecs: map[PRT]PRTSpec{
 			HE:   heSpec(),
 			SS:   ssSpec(),
