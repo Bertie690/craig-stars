@@ -957,9 +957,8 @@ func (t *turn) moveFleet(fleet *Fleet) {
 		return
 	}
 
-	// remove the previous waypoint, it's been processed already
+	// tack on the current waypoint if repeating orders
 	if fleet.RepeatOrders && !wp0.PartiallyComplete {
-		// if we are supposed to repeat orders,
 		wp0.processed = false
 		wp0.WaitAtWaypoint = false
 		wp0.PartiallyComplete = false

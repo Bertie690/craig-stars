@@ -828,7 +828,7 @@ func (fleet *Fleet) moveFleet(rules *Rules, mapObjectGetter mapObjectGetter, pla
 		return &fleetMoveInterrupted{reason: fleetMoveInterruptedEngineFailure}
 	}
 
-	// get the cost for the fleet
+	// get the fuel cost for the fleet
 	fuelCost := fleet.GetFuelCost(player, wp1.WarpSpeed, dist)
 	var fuelGenerated int = 0
 	if fuelCost > fleet.Fuel {
@@ -1179,7 +1179,7 @@ func (fleet *Fleet) getEstimatedRange(player *Player, warpSpeed int, cargoCapaci
 	return int(float64(fleet.Fuel) / float64(fuelCost) * 1000)
 }
 
-// Get the amount of fuel this ship will generate at a given warp
+// Fuel Generation Math:
 // F = 0 if the engine is running above the highest warp at which it travels for free (i.e. it is using fuel)
 // F = D if the engine is running at the highest warp at which it travels for free
 // F = 3D if the engine is running 1 warp factor below the highest warp at which it travels for free
@@ -1187,6 +1187,8 @@ func (fleet *Fleet) getEstimatedRange(player *Player, warpSpeed int, cargoCapaci
 // F = 10D if the engine is running 3 or more warp factors below the highest warp at which it travels for free
 // Note that the fuel generated is per engine, not per ship; i.e.; a ship with 2, 3, or 4 engines
 // produces (or uses) 2, 3, or 4 times as much fuel as a single engine ship.
+
+// Get the amount of fuel this fleet will generate at a given warp
 func (fleet *Fleet) getFuelGeneration(warpSpeed int, distance float64) int {
 	fuelGenerated := 0.0
 	for _, token := range fleet.Tokens {
