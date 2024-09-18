@@ -3,8 +3,6 @@ package cs
 import (
 	"fmt"
 	"math"
-
-	"github.com/rs/zerolog/log"
 )
 
 // A user can have multiple races stored in the database. Each time a game is created, a Race is copied
@@ -79,8 +77,9 @@ func (rc ResearchCost) Get(field TechField) ResearchCostLevel {
 		return rc.Biotechnology
 	}
 
-	log.Error().Msgf("invalid field %s to get ResearchCost", field)
+	// this is crashing some games. not sure what's up
 	return ResearchCostStandard
+	//panic(fmt.Sprintf("invalid field %s to get ResearchCost", field))
 }
 
 type RaceSpec struct {
@@ -604,6 +603,7 @@ func computeRaceSpec(race *Race, rules *Rules) RaceSpec {
 			Torpedo:          prtSpec.TechCostOffset.Torpedo,
 			Bomb:             prtSpec.TechCostOffset.Bomb,
 			PlanetaryDefense: prtSpec.TechCostOffset.PlanetaryDefense,
+			Stargate:         prtSpec.TechCostOffset.Stargate,
 			Terraforming:     prtSpec.TechCostOffset.Terraforming,
 		},
 		MaxPopulationOffset: prtSpec.MaxPopulationOffset,
@@ -719,8 +719,8 @@ func computeRaceSpec(race *Race, rules *Rules) RaceSpec {
 	}
 
 	// the PRT max pop serves as a multiplier to any LRTs
-	// i.e. HE has a .5 growth offset, so with OBRM it's .55
-	// i.e. JoaT has a 1.1 growth offset, so with OBRM it's 1.32
+	// i.e. HE has a .5 growth offset, so with OBRM it's .550
+	// i.e. JoaT has a 1.2 growth offset, so with OBRM it's 1.32
 	baseMaxPop := 1 + spec.MaxPopulationOffset
 	for _, lrt := range LRTs {
 		if !race.HasLRT(lrt) {
@@ -1308,4 +1308,15 @@ func (race *Race) getPlanetHabForHabIndex(iterIndex int, habType HabType, loopIn
 	}
 
 	return planetHab, terraformOffset
+}
+
+// get leftover points for a race and the type of points to spend it on
+func (race *Race) ComputeLeftoverRacePoints(startingPoints int) (int, SpendLeftoverPointsOn) {
+	points := race.ComputeRacePoints(startingPoints)
+	if points < 0 {
+		points = 0
+	} else if points > 50 {
+		points = 50
+	}
+	return points, race.SpendLeftoverPointsOn
 }

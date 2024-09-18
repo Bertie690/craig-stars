@@ -13,9 +13,8 @@ const NoGate = -1
 const InfiniteGate = math.MaxInt32
 const Infinite = -1
 
-// The TechStore contains all techs in the game. Eventually these will be user modifyable and
-// referenced per game, but for now all games use the StaticTechStore, which contains the default Stars!
-// techs.
+// The TechStore contains all techs in the game. Eventually these will be user modifiable and
+// referenced per game, but for now all games use the StaticTechStore, which contains the default Stars! techs.
 type TechStore struct {
 	Engines                  []TechEngine                          `json:"engines"`
 	PlanetaryScanners        []TechPlanetaryScanner                `json:"planetaryScanners"`
@@ -177,12 +176,12 @@ func (store *TechStore) GetHullsByType(techHullType TechHullType) []*TechHull {
 	return store.hullsByType[techHullType]
 }
 
-// get hull component from name 
+// get hull component from name
 func (store *TechStore) GetHullComponent(name string) *TechHullComponent {
 	return store.hullComponentsByName[store.transformName(name)]
 }
 
-// get all techs learned in the last tech level 
+// get all techs learned in the last tech level
 func (store *TechStore) GetTechsJustGained(player *Player, field TechField) []*Tech {
 	techs := []*Tech{}
 	for _, tech := range store.techs {
@@ -246,7 +245,7 @@ func (store *TechStore) GetBestTerraform(player *Player, terraformHabType Terraf
 	return bestTech
 }
 
-// get the player's best battle engine 
+// get the player's best battle engine
 func (store *TechStore) GetBestBattleEngine(player *Player, hull *TechHull) *TechEngine {
 	bestTech := &store.Engines[1] // start from QJ5 instead of SD
 	for i := range store.Engines {
@@ -254,14 +253,14 @@ func (store *TechStore) GetBestBattleEngine(player *Player, hull *TechHull) *Tec
 		if player.HasTech(&tech.Tech) {
 			// if this tech is not allowed on our hull (like the Settler's Delight on normal ships) skip it
 			if (len(tech.Requirements.HullsAllowed) > 0 && !slices.Contains(tech.Requirements.HullsAllowed, hull.Name)) ||
-			(len(tech.Requirements.HullsDenied) > 0 && slices.Contains(tech.Requirements.HullsDenied, hull.Name)) {
+				(len(tech.Requirements.HullsDenied) > 0 && slices.Contains(tech.Requirements.HullsDenied, hull.Name)) {
 				continue
 			}
 			// if engine has higher ideal speed than the current selection, use it
 			// ties are broken by the part's ranking (which leans towards cost & fuel efficiency)
-			if bestTech == nil || 
-			(tech.Engine.IdealSpeed > bestTech.Engine.IdealSpeed ||
-			(tech.Engine.IdealSpeed == bestTech.Engine.IdealSpeed && tech.TechHullComponent.Ranking > bestTech.TechHullComponent.Ranking)) {
+			if bestTech == nil ||
+				(tech.Engine.IdealSpeed > bestTech.Engine.IdealSpeed ||
+					(tech.Engine.IdealSpeed == bestTech.Engine.IdealSpeed && tech.TechHullComponent.Ranking > bestTech.TechHullComponent.Ranking)) {
 				bestTech = tech
 			}
 		}
@@ -271,17 +270,17 @@ func (store *TechStore) GetBestBattleEngine(player *Player, hull *TechHull) *Tec
 
 // get the player's best engine
 func (store *TechStore) GetBestEngine(player *Player, hull *TechHull, purpose FleetPurpose) *TechEngine {
-	bestTech := &store.Engines[0]
+	var bestTech *TechEngine
 	for i := range store.Engines {
 		tech := &store.Engines[i]
 		if player.HasTech(&tech.Tech) {
 			// if this tech is not allowed on our hull (like the Settler's Delight on normal ships) skip it
 			if (len(tech.Requirements.HullsAllowed) > 0 && !slices.Contains(tech.Requirements.HullsAllowed, hull.Name)) ||
-			(len(tech.Requirements.HullsDenied) > 0 && slices.Contains(tech.Requirements.HullsDenied, hull.Name)) {
+				(len(tech.Requirements.HullsDenied) > 0 && slices.Contains(tech.Requirements.HullsDenied, hull.Name)) {
 				continue
 			}
 
-			// colony ships don't want radiating engines if we would lose colonists from it 
+			// colony ships don't want radiating engines if we would lose colonists from it
 			if (purpose == FleetPurposeColonizer || purpose == FleetPurposeColonistFreighter) && tech.Radiating &&
 				!(player.Race.ImmuneRad || player.Race.Spec.HabCenter.Rad >= 85) {
 				continue
@@ -338,10 +337,10 @@ func (store *TechStore) GetBestSapper(player *Player) *TechHullComponent {
 	// than our best sapper (since they can damage armor)
 	// This is never possible in vanilla Stars!, but maybe for mods
 	bestBeam := store.GetBestBeamWeapon(player)
-	if bestTech == nil || 
-	(bestBeam.Power >= bestTech.Power &&
-	bestBeam.Cost.Resources <= bestTech.Cost.Resources &&
-	bestBeam.Range >= bestTech.Range) {
+	if bestTech == nil ||
+		(bestBeam.Power >= bestTech.Power &&
+			bestBeam.Cost.Resources <= bestTech.Cost.Resources &&
+			bestBeam.Range >= bestTech.Range) {
 		bestTech = bestBeam
 	}
 	return bestTech
@@ -409,7 +408,7 @@ func (store *TechStore) GetBestStructureBomb(player *Player) *TechHullComponent 
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if tech.Category == TechCategoryBomb && tech.MinKillRate == 0 && tech.StructureDestroyRate > 0 && player.HasTech(&tech.Tech) {
-				if bestTech == nil || tech.Ranking > bestTech.Ranking {
+			if bestTech == nil || tech.Ranking > bestTech.Ranking {
 				bestTech = tech
 			}
 		}
@@ -445,7 +444,7 @@ func (store *TechStore) GetBestFuelTank(player *Player) *TechHullComponent {
 	return bestTech
 }
 
-// get the player's best cargo pod
+// get the best cargo pod for a player
 func (store *TechStore) GetBestCargoPod(player *Player) *TechHullComponent {
 	var bestTech *TechHullComponent
 	for i := range store.HullComponents {
@@ -459,7 +458,7 @@ func (store *TechStore) GetBestCargoPod(player *Player) *TechHullComponent {
 	return bestTech
 }
 
-// get the player's best colonization module
+// get the best colony module for a player
 func (store *TechStore) GetBestColonizationModule(player *Player) *TechHullComponent {
 	var bestTech *TechHullComponent
 	for i := range store.HullComponents {
@@ -473,12 +472,40 @@ func (store *TechStore) GetBestColonizationModule(player *Player) *TechHullCompo
 	return bestTech
 }
 
-// get the player's best battle computer
+// get the best battle computer for a player
 func (store *TechStore) GetBestBattleComputer(player *Player) *TechHullComponent {
 	var bestTech *TechHullComponent
 	for i := range store.HullComponents {
 		tech := &store.HullComponents[i]
 		if tech.InitiativeBonus > 0 && tech.TorpedoBonus > 0 && player.HasTech(&tech.Tech) {
+			if bestTech == nil || tech.Ranking > bestTech.Ranking {
+				bestTech = tech
+			}
+		}
+	}
+	return bestTech
+}
+
+// get the player's best beam capacitor
+func (store *TechStore) GetBestBeamCapacitor(player *Player) *TechHullComponent {
+	var bestTech *TechHullComponent
+	for i := range store.HullComponents {
+		tech := &store.HullComponents[i]
+		if tech.BeamBonus > 0 && player.HasTech(&tech.Tech) {
+			if bestTech == nil || tech.Ranking > bestTech.Ranking {
+				bestTech = tech
+			}
+		}
+	}
+	return bestTech
+}
+
+// get the player's best beam deflector
+func (store *TechStore) GetBestBeamDeflector(player *Player) *TechHullComponent {
+	var bestTech *TechHullComponent
+	for i := range store.HullComponents {
+		tech := &store.HullComponents[i]
+		if tech.BeamDefense > 0 && player.HasTech(&tech.Tech) {
 			if bestTech == nil || tech.Ranking > bestTech.Ranking {
 				bestTech = tech
 			}
@@ -501,6 +528,20 @@ func (store *TechStore) GetBestMiningRobot(player *Player) *TechHullComponent {
 	return bestTech
 }
 
+// get the player's best orbital terraforming robot
+func (store *TechStore) GetBestTerraformRobot(player *Player) *TechHullComponent {
+	var bestTech *TechHullComponent
+	for i := range store.HullComponents {
+		tech := &store.HullComponents[i]
+		if tech.Category == TechCategoryMineRobot && tech.TerraformRate > 0 && player.HasTech(&tech.Tech) {
+			if bestTech == nil || tech.Ranking > bestTech.Ranking {
+				bestTech = tech
+			}
+		}
+	}
+	return bestTech
+}
+
 // get the player's best mine layer by type
 func (store *TechStore) GetBestMineLayer(player *Player, mineFieldType MineFieldType) *TechHullComponent {
 	var bestTech *TechHullComponent
@@ -515,7 +556,7 @@ func (store *TechStore) GetBestMineLayer(player *Player, mineFieldType MineField
 	return bestTech
 }
 
-// get the player's best packet thrower
+// get the best packet thrower for a player
 func (store *TechStore) GetBestPacketThrower(player *Player) *TechHullComponent {
 	var bestTech *TechHullComponent
 	for i := range store.HullComponents {
@@ -529,7 +570,7 @@ func (store *TechStore) GetBestPacketThrower(player *Player) *TechHullComponent 
 	return bestTech
 }
 
-// get the player's best stargate
+// get the best stargate for a player
 func (store *TechStore) GetBestStargate(player *Player) *TechHullComponent {
 	var bestTech *TechHullComponent
 	for i := range store.HullComponents {
@@ -1160,7 +1201,7 @@ var RoboUltraMiner = TechHullComponent{Tech: NewTech("Robo-Ultra-Miner", NewCost
 	MiningRate:   25,
 	HullSlotType: HullSlotTypeMining,
 }
-var OrbitalAdjuster = TechHullComponent{Tech: NewTech("Orbital Adjuster", NewCost(25, 25, 25, 50), TechRequirements{TechLevel: TechLevel{Biotechnology: 6}, PRTsRequired: []PRT{CA}}, 70, TechCategoryMineRobot),
+var OrbitalAdjuster = TechHullComponent{Tech: NewTech("Orbital Adjuster", NewCost(25, 25, 25, 50), TechRequirements{TechLevel: TechLevel{Biotechnology: 6}, PRTsRequired: []PRT{CA}}, 0, TechCategoryMineRobot),
 
 	Mass:          80,
 	CloakUnits:    25,
@@ -1490,24 +1531,24 @@ var UltraStealthCloak = TechHullComponent{Tech: NewTech("Ultra-Stealth Cloak", N
 }
 var BattleComputer = TechHullComponent{Tech: NewTech("Battle Computer", NewCost(0, 0, 15, 6), TechRequirements{TechLevel: TechLevel{}}, 40, TechCategoryElectrical),
 
-	Mass:            1,
-	InitiativeBonus: 1,
-	TorpedoBonus:    .2,
-	HullSlotType:    HullSlotTypeElectrical,
+	Mass:                   1,
+	InitiativeBonus:        1,
+	TorpedoBonus:           .2,
+	HullSlotType:           HullSlotTypeElectrical,
 }
 var BattleSuperComputer = TechHullComponent{Tech: NewTech("Battle Super Computer", NewCost(0, 0, 25, 14), TechRequirements{TechLevel: TechLevel{Energy: 5, Electronics: 11}}, 50, TechCategoryElectrical),
 
-	Mass:            1,
-	InitiativeBonus: 2,
-	TorpedoBonus:    .3,
-	HullSlotType:    HullSlotTypeElectrical,
+	Mass:                   1,
+	InitiativeBonus:        2,
+	TorpedoBonus:           .3,
+	HullSlotType:           HullSlotTypeElectrical,
 }
 var BattleNexus = TechHullComponent{Tech: NewTech("Battle Nexus", NewCost(0, 0, 30, 15), TechRequirements{TechLevel: TechLevel{Energy: 10, Electronics: 19}}, 60, TechCategoryElectrical),
 
-	Mass:            1,
-	InitiativeBonus: 3,
-	TorpedoBonus:    .5,
-	HullSlotType:    HullSlotTypeElectrical,
+	Mass:                   1,
+	InitiativeBonus:        3,
+	TorpedoBonus:           .5,
+	HullSlotType:           HullSlotTypeElectrical,
 }
 var Jammer10 = TechHullComponent{Tech: NewTech("Jammer 10", NewCost(0, 0, 2, 6), TechRequirements{TechLevel: TechLevel{Energy: 2, Electronics: 6}, PRTsRequired: []PRT{IS}}, 70, TechCategoryElectrical),
 
@@ -2018,7 +2059,7 @@ var WolverineDiffuseShield = TechHullComponent{Tech: NewTech("Wolverine Diffuse 
 	Shield:       60,
 	HullSlotType: HullSlotTypeShield,
 }
-var CrobySharmor = TechHullComponent{Tech: NewTech("Croby Sharmor", NewCost(7, 0, 4, 15), TechRequirements{TechLevel: TechLevel{Energy: 7, Construction: 4}, PRTsRequired: []PRT{IS}}, 40, TechCategoryShield),
+var CrobySharmor = TechHullComponent{Tech: NewTech("Croby Sharmor", NewCost(7, 0, 4, 15), TechRequirements{TechLevel: TechLevel{Energy: 7, Construction: 4}, PRTsRequired: []PRT{IS}}, 60, TechCategoryShield),
 
 	Mass:         10,
 	Shield:       60,
@@ -2032,7 +2073,7 @@ var ShadowShield = TechHullComponent{Tech: NewTech("Shadow Shield", NewCost(3, 0
 	CloakUnits:   70,
 	HullSlotType: HullSlotTypeShield,
 }
-var BearNeutrinoBarrier = TechHullComponent{Tech: NewTech("Bear Neutrino Barrier", NewCost(4, 0, 4, 8), TechRequirements{TechLevel: TechLevel{Energy: 10}}, 60, TechCategoryShield),
+var BearNeutrinoBarrier = TechHullComponent{Tech: NewTech("Bear Neutrino Barrier", NewCost(4, 0, 4, 8), TechRequirements{TechLevel: TechLevel{Energy: 10}}, 40, TechCategoryShield),
 
 	Mass:         1,
 	Shield:       100,
@@ -2554,7 +2595,7 @@ var SpaceDock = TechHull{Tech: NewTech("Space Dock", NewCost(20, 5, 25, 100), Te
 	Initiative:            12,
 	RangeBonus:            1,
 	Starbase:              true,
-	RepairBonus:           .03,     // 8% total repair rate
+	RepairBonus:           .15,     // 20% total repair rate
 	MaxPopulation:         500_000, // AR races can have a pop of up to 500k on this base
 	Slots: []TechHullSlot{
 		{Position: Vector{-1, -1}, Type: HullSlotTypeOrbitalElectrical, Capacity: 1},
