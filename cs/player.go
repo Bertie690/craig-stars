@@ -38,6 +38,7 @@ type Player struct {
 	AcquiredTechs             map[string]bool      `json:"acquiredTechs,omitempty"`
 	AchievedVictoryConditions Bitmask              `json:"achievedVictoryConditions,omitempty"`
 	Victor                    bool                 `json:"victor"`
+	Archived                  bool                 `json:"archived"`
 	Stats                     *PlayerStats         `json:"stats,omitempty"`
 	Spec                      PlayerSpec           `json:"spec,omitempty"`
 	leftoverResources         int
@@ -64,6 +65,7 @@ type PlayerStatus struct {
 	SubmittedTurn bool       `json:"submittedTurn,omitempty"`
 	Color         string     `json:"color,omitempty"`
 	Victor        bool       `json:"victor,omitempty"`
+	Archived      bool       `json:"archived,omitempty"`
 }
 
 type PlayerIntels struct {
@@ -246,7 +248,7 @@ func NewPlayer(userID int64, race *Race) *Player {
 		PlayerOrders: PlayerOrders{
 			Researching:       Energy,
 			ResearchAmount:    15,
-			NextResearchField: NextResearchFieldLowestField,
+			NextResearchField: NextResearchFieldSameField,
 		},
 		AcquiredTechs: map[string]bool{},
 	}

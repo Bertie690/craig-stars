@@ -1843,7 +1843,9 @@ func (t *turn) fleetRefuel() {
 		if planet == nil {
 			continue
 		}
-		if !planet.Spec.HasStarbase {
+
+		// can only fuel on docks
+		if planet.Spec.DockCapacity == 0 {
 			continue
 		}
 
@@ -2442,6 +2444,18 @@ func (t *turn) fleetTransferOwner() {
 			player := t.game.getPlayer(fleet.PlayerNum)
 			targetPlayer := t.game.getPlayer(wp0.TransferToPlayer)
 
+			if targetPlayer == nil {
+				// can't find target player
+				messager.fleetTransferInvalidPlayer(player, fleet)
+				t.log.Error().
+					Int("Player", fleet.PlayerNum).
+					Str("Fleet", fleet.Name).
+					Msgf("tried to transfer fleet player %d, but target player doesn't exist.", wp0.TargetPlayerNum)
+				wp0.Task = WaypointTaskNone
+				wp0.TransferToPlayer = None
+				continue
+			}
+
 			if fleet.Cargo.Colonists > 0 {
 				// can't give colonists
 				messager.fleetTransferInvalidColonists(player, fleet, targetPlayer)
@@ -2450,18 +2464,6 @@ func (t *turn) fleetTransferOwner() {
 					Str("Fleet", fleet.Name).
 					Msgf("transferring fleet %s failed, fleet has colonists", fleet.Name)
 
-				wp0.Task = WaypointTaskNone
-				wp0.TransferToPlayer = None
-				continue
-			}
-
-			if targetPlayer == nil {
-				// can't find target player
-				messager.fleetTransferInvalidPlayer(player, fleet)
-				t.log.Error().
-					Int("Player", fleet.PlayerNum).
-					Str("Fleet", fleet.Name).
-					Msgf("tried to transfer fleet player %d, but target player doesn't exist.", wp0.TargetPlayerNum)
 				wp0.Task = WaypointTaskNone
 				wp0.TransferToPlayer = None
 				continue
