@@ -2007,7 +2007,7 @@ func (t *turn) fleetBattle() {
 			}
 
 			var highestTechLevel TechLevel
-			tokens := []ShipToken{} // needed for component trading function call
+			tokens := make([]ShipToken, len(record.DestroyedTokens)) // needed for component trading function call
 			destroyedCost := Cost{}
 			salvageOwner := 1
 			for i, token := range record.DestroyedTokens {
@@ -2018,6 +2018,7 @@ func (t *turn) fleetBattle() {
 
 				// record its tech level for tech trading
 				highestTechLevel = highestTechLevel.Max(token.design.Spec.TechLevel)
+				tokens[i].DesignNum = token.DesignNum
 				tokens[i].Quantity = token.Quantity
 				tokens[i].design = token.design
 			}

@@ -53,14 +53,14 @@ func (t *techTrade) acquirablePartGained(rules *Rules, player *Player, tokens []
 		return nil
 	}
 
-	var qtyPerPart map[*Tech]int
-	var parts []*Tech
+	qtyPerPart := map[*Tech]int{}
+	parts := []*Tech{}
 
 	// tally up parts in our fleet
 	for _, token := range tokens {
 		// make copy of token design's slots for part checking
 		slots := slices.Clone(token.design.Slots)
-		// iterate through the token's slots and remove anything not explicitly tradable 
+		// iterate through the token's slots and remove anything not explicitly tradable
 		slots = slices.DeleteFunc(slots, func(slot ShipDesignSlot) bool {
 			return rules.techs.GetHullComponent(slot.HullComponent).Tech.Requirements.Acquirable
 		})
@@ -85,7 +85,7 @@ func (t *techTrade) acquirablePartGained(rules *Rules, player *Player, tokens []
 		// randmize the order of items to remove potential bias
 		rules.random.Shuffle(len(parts), func(i, j int) { parts[i], parts[j] = parts[j], parts[i] })
 
-		// loop through our part list  
+		// loop through our part list
 		for _, part := range parts {
 			qty := qtyPerPart[part]
 			if checkAcquirablePartChance(rules, qty) &&
@@ -107,15 +107,15 @@ func techTradeChance(baseChance float64, level int) float64 {
 }
 
 // get the chance of a part trade, based on the base chance and the TOTAL number of items in the fleet
-// 
+//
 // allocates based on optimal distribution of items (ie as many in 1 check as you can)
 func checkAcquirablePartChance(rules *Rules, qty int) bool {
 	for check := 0; check < qty; check += rules.AcquirablePartTradeItemMax {
 		// chance for 1 check = # of items (max 25) * 0.005
 		tradeChance := rules.TechTradeChance * rules.AcquirablePartTradeChanceBase * math.Min(
-		float64((qty-check)/rules.AcquirablePartTradeItemMax), 1)
+			float64((qty-check)/rules.AcquirablePartTradeItemMax), 1)
 		if tradeChance > rules.random.Float64() {
-			// we traded the part! 
+			// we traded the part!
 			return true
 		}
 	}
