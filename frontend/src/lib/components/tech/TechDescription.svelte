@@ -225,7 +225,7 @@
 						descriptions.push(
 							`Cloaks any ship, reducing the range at which scanners detect it by up to ${getCloakPercentForCloakUnits(
 								hullComponent.cloakUnits
-							).toFixed()}%.`
+							).toFixed()}%. Cloak amount is reduced `
 						);
 					}
 				}
@@ -244,14 +244,14 @@
 
 				if (hullComponent.colonizationModule) {
 					descriptions.push(
-						`This pod allows a ship to colonize an uninhabited planet. Upon arrival, the pod will dismantle it and any other ships in the fleet into supplies for the colonists. 
+						`This module allows a ship to colonize an uninhabited planet. Upon arrival, the pod will dismantle it and any other ships in the fleet into supplies for the colonists. 
 						The fleet must have orders set to "Colonize", and at least one ship in it must be carrying colonists.`
 					);
 				}
 
 				if (hullComponent.orbitalConstructionModule) {
 					descriptions.push(
-						`This pod contains an empty orbital hull which can be deployed in orbit of an uninhabited planet to colonize it, scrapping all ships in the fleet in the progress. 
+						`This module contains an empty orbital hull which can be deployed in orbit of an uninhabited planet to colonize it, scrapping all ships in the fleet in the progress. 
 						The fleet must have orders set to "Colonize", and at least one ship in it must be carrying colonists.`
 					);
 					if ((hullComponent.minKillRate ?? 0) > 0) {
@@ -287,7 +287,7 @@
 						descriptions.push(
 							`This module increases the accuracy of your torpedos by ${
 								(hullComponent.torpedoBonus ?? 0) * 100
-							}% and increases your initiative by ${
+							}% of the current amount and increases your initiative by ${
 								hullComponent.initiativeBonus
 							}. If an enemy ship has jammers this will act to offset their effects.`
 						);
@@ -299,7 +299,7 @@
 						descriptions.push(
 							`This module increases the accuracy of your torpedos by ${
 								(hullComponent.torpedoBonus ?? 0) * 100
-							}%. If an enemy ship has jammers this will act to offset their effects.`
+							}% of the current amount. If an enemy ship has jammers this will act to offset their effects.`
 						);
 					}
 				}
@@ -396,7 +396,7 @@
 
 					if ((hullComponent.scanRangePen ?? 0) > 0) {
 						descriptions.push(
-							`This scanner can determine a planet's basic stats from a distance up to ${hullComponent.scanRangePen} light years. The scanner will also spot enemy fleets attempting to hide behind planets within this range.`
+							`This scanner can determine a planet's basic stats from a distance up to ${hullComponent.scanRangePen} light years. The scanner will also spot enemy fleets attempting to hide behind planets within range.`
 						);
 					}
 

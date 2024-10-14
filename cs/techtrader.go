@@ -13,8 +13,7 @@ type techTrader interface {
 
 	// Return which tradable part was gained for this tech trade event (if any)
 	//
-	// Does not take a part as an argument as the only way MT parts can be transferred
-	// is if a ship with one dies in battle or is scrapped
+	// Loops through the tokens' slots to count MT parts
 	acquirablePartGained(rules *Rules, player *Player, tokens []ShipToken) *Tech
 }
 
@@ -53,7 +52,7 @@ func (t *techTrade) acquirablePartGained(rules *Rules, player *Player, tokens []
 		return nil
 	}
 
-	qtyPerPart := map[*Tech]int{}
+	qtyPerPart := map[*Tech]int{} // maps tech part to total quantity on fleet
 	parts := []*Tech{}
 
 	// tally up parts in our fleet
@@ -61,6 +60,7 @@ func (t *techTrade) acquirablePartGained(rules *Rules, player *Player, tokens []
 		// make copy of token design's slots for part checking
 		slots := slices.Clone(token.design.Slots)
 		// iterate through the token's slots and remove anything not explicitly tradable
+		// TODO: test performance to see if this is faster than using the new function added in tech-tags branch once it gets merged
 		slots = slices.DeleteFunc(slots, func(slot ShipDesignSlot) bool {
 			return rules.techs.GetHullComponent(slot.HullComponent).Tech.Requirements.Acquirable
 		})
@@ -106,9 +106,9 @@ func techTradeChance(baseChance float64, level int) float64 {
 	return baseChance * (1 - math.Pow(baseChance, float64(level)))
 }
 
-// get the chance of a part trade, based on the base chance and the TOTAL number of items in the fleet
-//
-// allocates based on optimal distribution of items (ie as many in 1 check as you can)
+// Check if a successful part trade occurs based on base trade chance and item quantity
+// 
+// Allocates based on optimal distribution of items (ie as many in 1 check as you can fit)
 func checkAcquirablePartChance(rules *Rules, qty int) bool {
 	for check := 0; check < qty; check += rules.AcquirablePartTradeItemMax {
 		// chance for 1 check = # of items (max 25) * 0.005

@@ -240,6 +240,7 @@ func (t *turn) scrapFleet(fleet *Fleet, colonize bool) {
 			if part := techTrader.acquirablePartGained(&t.game.Rules, planetPlayer, fleet.Tokens); part != nil {
 				planetPlayer.AcquiredTechs[part.Name] = true
 				planetPlayer.acquirablePartGained = true
+				messager.playerAcquirablePartGainedScrappedFleet(planetPlayer, planet, fleet.Name, part.Name)
 
 				t.log.Debug().
 					Int("Player", planetPlayer.Num).
@@ -247,7 +248,6 @@ func (t *turn) scrapFleet(fleet *Fleet, colonize bool) {
 					Str("Fleet", fleet.Name).
 					Str("Tech", part.Name).
 					Msgf("gained tech part from scrapping")
-				messager.playerAcquirablePartGainedScrappedFleet(planetPlayer, planet, fleet.Name, part.Name)
 			}
 		}
 	} else {
