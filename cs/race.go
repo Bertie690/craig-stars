@@ -592,7 +592,7 @@ func (r *Race) GetPlanetHabitability(hab Hab) int {
 
 // compute the spec for this race
 func computeRaceSpec(race *Race, rules *Rules) RaceSpec {
-	prtSpec := rules.PRTSpecs[PRT(race.PRT)]
+	prtSpec := rules.PRTSpecs[PRT(race.PRT)].clone()
 	spec := RaceSpec{
 		HabCenter:          race.HabCenter(),
 		StartingTechLevels: prtSpec.StartingTechLevels,
@@ -622,6 +622,7 @@ func computeRaceSpec(race *Race, rules *Rules) RaceSpec {
 			MiniaturizationMax:      .75,
 			MiniaturizationPerLevel: .04,
 		},
+		ScrapMineralOffsetStarbase:   .8 - (1.0 / 3),
 
 		// PP
 		MineralsPerSingleMineralPacket:   prtSpec.MineralsPerSingleMineralPacket,
