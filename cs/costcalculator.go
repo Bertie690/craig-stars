@@ -97,14 +97,14 @@ func (c costFloat64) multiply(factor float64) costFloat64 {
 	}
 }
 
-func (c costFloat64) divide(divisor float64) costFloat64 {
+/* func (c costFloat64) divide(divisor float64) costFloat64 {
 	return costFloat64{
 		Ironium:   c.Ironium / divisor,
 		Boranium:  c.Boranium / divisor,
 		Germanium: c.Germanium / divisor,
 		Resources: c.Resources / divisor,
 	}
-}
+}*/
 
 // Return greater of 2 cost structs for all ResourceTypes separately
 func (c costFloat64) max(other costFloat64) costFloat64 {

@@ -412,7 +412,7 @@ func (t *Tech) GetPlayerCostFloat(techLevels TechLevel, spec MiniaturizationSpec
 
 	// apply any tech cost offsets 
 	// TODO: Implement IT 25% gate discount in actually less janky way
-	cost := t.Cost.ToCostFloat64().multiply(miniaturizationFactor).round(math.Ceil)
+	cost := t.Cost.ToCostFloat64().multiply(miniaturizationFactor).round(roundHalfDown)
 	switch t.Category {
 	case TechCategoryEngine:
 		cost = cost.multiply(1 + costOffset.Engine)
