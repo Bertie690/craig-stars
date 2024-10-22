@@ -60,6 +60,7 @@ func (c Cost) AddInt(costType CostType, amount int) Cost {
 	}
 	return c
 }
+
 func FromMineralAndResources(m Mineral, resources int) Cost {
 	return Cost{
 		Ironium:   m.Ironium,
@@ -90,6 +91,16 @@ func (c Cost) ToMineral() Mineral {
 		Ironium:   c.Ironium,
 		Boranium:  c.Boranium,
 		Germanium: c.Germanium,
+	}
+}
+
+// convert an int cost to a float64 cost
+func (c Cost) ToCostFloat64() CostFloat64 {
+	return CostFloat64{
+		Ironium:   float64(c.Ironium),
+		Boranium:  float64(c.Boranium),
+		Germanium: float64(c.Germanium),
+		Resources: float64(c.Resources),
 	}
 }
 
