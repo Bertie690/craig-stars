@@ -358,7 +358,7 @@ func (t *TechTerraform) String() string        { return t.Name }
 // Get baseline cost for this technology given a player's tech levels, minaturization stats & racial cost modifiers
 // 
 // Returns floating point cost for extra precision
-func (t *Tech) GetPlayerCostFloat(techLevels TechLevel, spec MiniaturizationSpec, costOffset TechCostOffset) CostFloat64 {
+func (t *Tech) GetPlayerCostFloat(techLevels TechLevel, spec MiniaturizationSpec, costOffset TechCostOffset) costFloat64 {
 	// figure out miniaturization
 	// this is 4% per level above the required tech we have.
 	// We count the smallest diff, i.e. if you have
@@ -412,22 +412,22 @@ func (t *Tech) GetPlayerCostFloat(techLevels TechLevel, spec MiniaturizationSpec
 
 	// apply any tech cost offsets 
 	// TODO: Implement IT 25% gate discount in actually less janky way
-	cost := t.Cost.ToCostFloat64().Multiply(miniaturizationFactor).Round(math.Ceil)
+	cost := t.Cost.ToCostFloat64().multiply(miniaturizationFactor).round(math.Ceil)
 	switch t.Category {
 	case TechCategoryEngine:
-		cost = cost.Multiply(1 + costOffset.Engine)
+		cost = cost.multiply(1 + costOffset.Engine)
 	case TechCategoryBeamWeapon:
-		cost = cost.Multiply(1 + costOffset.BeamWeapon)
+		cost = cost.multiply(1 + costOffset.BeamWeapon)
 	case TechCategoryBomb:
-		cost = cost.Multiply(1 + costOffset.Bomb)
+		cost = cost.multiply(1 + costOffset.Bomb)
 	case TechCategoryTorpedo:
-		cost = cost.Multiply(1 + costOffset.Torpedo)
+		cost = cost.multiply(1 + costOffset.Torpedo)
 	case TechCategoryOrbital:
 		if strings.Contains(t.Name, "Stargate") {
-			cost = cost.Multiply(1 + costOffset.Stargate)
+			cost = cost.multiply(1 + costOffset.Stargate)
 		}
 	case TechCategoryTerraforming:
-		cost = cost.Multiply(1 + costOffset.Terraforming)
+		cost = cost.multiply(1 + costOffset.Terraforming)
 	}
 
 	return cost

@@ -95,8 +95,8 @@ func (c Cost) ToMineral() Mineral {
 }
 
 // convert an int cost to a float64 cost
-func (c Cost) ToCostFloat64() CostFloat64 {
-	return CostFloat64{
+func (c Cost) ToCostFloat64() costFloat64 {
+	return costFloat64{
 		Ironium:   float64(c.Ironium),
 		Boranium:  float64(c.Boranium),
 		Germanium: float64(c.Germanium),
