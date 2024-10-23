@@ -1,7 +1,29 @@
-BINARY_NAME=craig-stars
-VERSION=0.0.0-develop
-COMMIT=`git rev-parse HEAD`
-BUILDTIME=$$(date +'%y.%m.%d %H:%M:%S')
+BINARY_NAME:=craig-stars
+VERSION:=0.0.0-develop
+COMMIT:=`git rev-parse HEAD`
+BUILDTIME:= $$(date +'%y.%m.%d %H:%M:%S')
+
+# detect os type and swap instructions accordingly
+# Swap to powershell if on windows 
+ifeq ($(OS),Windows_NT) 
+detected_OS := Windows
+SHELL := powershell.exe
+.SHELLFLAGS := -NoProfile -Command
+else
+detected_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown')
+endif
+
+# conditionals needed to mimic behavior on unix-like systems
+ifeq ($(detected_OS),Windows)
+mkdir = if (!(Test-Path $(1) )) {New-Item -Name $(1) -ItemType Directory}
+rm = if ( Test-Path $(1) ) { Remove-Item -Recurse -Force $(1) }
+else
+mkdir = mkdir -p $(1)
+rm = rm -rf $(1)
+endif 
+
+# replaces backslashes with unix-style frontslashes to make path universally valid
+goroot := $(subst \, /,$(shell go env GOROOT)) 
 
 # always redo these
 .PHONY: build test clean dev dev_backend dev_frontend
@@ -9,11 +31,11 @@ BUILDTIME=$$(date +'%y.%m.%d %H:%M:%S')
 build: build_frontend tidy vendor generate build_server
 
 build_frontend:
-	cd frontend && npm install
-	cd frontend && npm run build
+	cd frontend; npm install
+	cd frontend; npm run build
 
 build_server:
-	mkdir -p dist
+	$(call mkdir,dist)
 	go build \
 	-o dist/${BINARY_NAME} \
 	-ldflags \
@@ -23,12 +45,12 @@ build_server:
 	main.go
 
 build_wasm:
-	mkdir -p frontend/src/lib/wasm
-	GOOS=js GOARCH=wasm \
+	$(call mkdir,frontend/src/lib/wasm)
+	go env -w GOOS=js GOARCH=wasm
 	go build \
 	-o frontend/src/lib/wasm/cs.wasm \
 	wasm/main.go
-	cp $(shell go env GOROOT)/misc/wasm/wasm_exec.js ./frontend/src/lib/wasm/wasm_exec.js
+	cp $(goroot)/misc/wasm/wasm_exec.js ./frontend/src/lib/wasm/wasm_exec.js
 
 # use docker to build an amd64 image for linux deployment
 build_docker:
@@ -40,13 +62,13 @@ generate:
 
 test:
 	go test ./...
-	cd frontend && npm run test
+	cd frontend; npm run test
 
 clean:
 	go clean
-	rm -rf dist
-	rm -rf vendor
-	rm -rf frontend/build
+	$(call rm,dist)
+	$(call rm,vendor)
+	$(call rm,frontend/build)
 
 # uninstall unused modules
 tidy:
@@ -57,7 +79,7 @@ vendor:
 	go mod vendor
 
 dev_frontend:
-	cd frontend && npm run dev
+	cd frontend; npm run dev
 
 dev_backend:
 	air
