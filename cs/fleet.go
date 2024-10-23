@@ -188,29 +188,15 @@ func FleetPurposeFromShipDesignPurpose(purpose ShipDesignPurpose) FleetPurpose {
 		return FleetPurposeScout
 	case ShipDesignPurposeColonizer:
 		return FleetPurposeColonizer
-
-	case ShipDesignPurposeBomber:
-		fallthrough
-	case ShipDesignPurposeSmartBomber:
-		fallthrough
-	case ShipDesignPurposeStructureBomber:
+	case ShipDesignPurposeBomber, ShipDesignPurposeSmartBomber, ShipDesignPurposeStructureBomber:
 		return FleetPurposeBomber
-
-	case ShipDesignPurposeFighter:
-		fallthrough
-	case ShipDesignPurposeFighterScout:
+	case ShipDesignPurposeFighter, ShipDesignPurposeFighterScout:
 		return FleetPurposeFighter
 	case ShipDesignPurposeCapitalShip:
 		return FleetPurposeCapitalShip
-
-	case ShipDesignPurposeFreighter:
-		fallthrough
-	case ShipDesignPurposeFuelFreighter:
+	case ShipDesignPurposeFreighter, ShipDesignPurposeFuelFreighter:
 		return FleetPurposeFreighter
-
-	case ShipDesignPurposeMultiPurposeFreighter:
-		fallthrough
-	case ShipDesignPurposeColonistFreighter:
+	case ShipDesignPurposeMultiPurposeFreighter, ShipDesignPurposeColonistFreighter:
 		return FleetPurposeColonistFreighter
 
 	case ShipDesignPurposeArmedFreighter:
@@ -219,9 +205,7 @@ func FleetPurposeFromShipDesignPurpose(purpose ShipDesignPurpose) FleetPurpose {
 		return FleetPurposeMiner
 	case ShipDesignPurposeTerraformer:
 		return FleetPurposeTerraformer
-	case ShipDesignPurposeDamageMineLayer:
-		fallthrough
-	case ShipDesignPurposeSpeedMineLayer:
+	case ShipDesignPurposeDamageMineLayer, ShipDesignPurposeSpeedMineLayer:
 		return FleetPurposeMineLayer
 	}
 	return FleetPurposeNone
@@ -648,7 +632,7 @@ func ComputeFleetSpec(rules *Rules, player *Player, fleet *Fleet) FleetSpec {
 	}
 
 	// compute the cloaking based on the cloak units and cargo
-	spec.CloakPercent = computeFleetCloakPercent(&spec, fleet.Cargo.Total() + spec.BaseCloakedCargo, player.Race.Spec.FreeCargoCloaking)
+	spec.CloakPercent = computeFleetCloakPercent(&spec, fleet.Cargo.Total()+spec.BaseCloakedCargo, player.Race.Spec.FreeCargoCloaking)
 
 	if !spec.Starbase {
 		spec.EstimatedRange = fleet.getEstimatedRange(player, spec.Engine.IdealSpeed, spec.CargoCapacity)
@@ -1314,7 +1298,7 @@ func (fleet *Fleet) getScrapAmount(rules *Rules, player *Player, planet *Planet,
 
 	if scrapResourceFactor > 0 {
 		// Formula for calculating resources: (Current planet production * Extra resources)/(Current planet production + Extra Resources)
-		extraResources = int(float64(fleet.Spec.Cost.Resources)*scrapResourceFactor + .5) // add 0.5 to round up 
+		extraResources = int(float64(fleet.Spec.Cost.Resources)*scrapResourceFactor + .5) // add 0.5 to round up
 		extraResources = int(float64(planetResources*extraResources) / float64(planetResources+extraResources))
 		scrappedCost.Resources = extraResources
 	} else {
@@ -1363,9 +1347,7 @@ func (fleet *Fleet) getCargoLoadAmount(dest cargoHolder, cargoType CargoType, ta
 		transferAmount = MinInt(availableToLoad, availableCapacity)
 	case TransportActionLoadAmount:
 		transferAmount = MinInt(MinInt(availableToLoad, task.Amount), availableCapacity)
-	case TransportActionWaitForPercent:
-		fallthrough
-	case TransportActionFillPercent:
+	case TransportActionWaitForPercent, TransportActionFillPercent:
 		// we want a percent of our hold to be filled with some amount, figure out how
 		// much that is in kT, i.e. 50% of 100kT would be 50kT of this mineral
 		var taskAmountkT = int(float64(task.Amount) / 100 * float64(totalCapacity))
