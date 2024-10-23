@@ -1,3 +1,4 @@
+import SelectedMapObject from '$lib/components/icons/SelectedMapObject.svelte';
 import {
 	battlesSortBy,
 	getBattleRecordDetails,
@@ -24,6 +25,7 @@ import type { ShipDesign } from '$lib/types/ShipDesign';
 import type { TechStore } from '$lib/types/Tech';
 import type { Vector } from '$lib/types/Vector';
 import type { Wormhole } from '$lib/types/Wormhole';
+import type { CS } from '$lib/wasm';
 import { groupBy, startCase } from 'lodash-es';
 
 export interface DesignFinder {
@@ -33,9 +35,9 @@ export interface DesignFinder {
 
 export interface CostFinder {
 	getItemCost(
+		cs: CS,
 		item: ProductionQueueItem | undefined,
 		designFinder: DesignFinder,
-		techStore: TechStore,
 		planet?: Planet,
 		quantity?: number
 	): Cost;
@@ -300,6 +302,10 @@ export class Universe implements PlayerUniverse, PlayerIntels, DesignFinder {
 		}
 	}
 
+	getSalvage(num: number | undefined): Salvage | undefined {
+		return this.salvages.find((s) => s.num === num);
+	}
+
 	getMyMapObjectsByPosition(position: MapObject | Vector) {
 		return this.myMapObjectsByPosition[positionKey(position)];
 	}
@@ -324,7 +330,7 @@ export class Universe implements PlayerUniverse, PlayerIntels, DesignFinder {
 		return this.planets.find((p) => p.num === num);
 	}
 
-	getFleet(playerNum: number, num: number) {
+	getFleet(playerNum: number | undefined, num: number | undefined) {
 		return this.fleets.find((f) => f.playerNum === playerNum && f.num === num);
 	}
 
@@ -342,6 +348,10 @@ export class Universe implements PlayerUniverse, PlayerIntels, DesignFinder {
 
 	getMineField(playerNum: number | undefined, num: number | undefined) {
 		return this.mineFields.find((f) => f.playerNum === playerNum && f.num === num);
+	}
+
+	getMineralPacket(playerNum: number | undefined, num: number | undefined) {
+		return this.mineralPackets.find((f) => f.playerNum === playerNum && f.num === num);
 	}
 
 	addFleets(fleets: Fleet[]) {
@@ -373,6 +383,12 @@ export class Universe implements PlayerUniverse, PlayerIntels, DesignFinder {
 
 	updateSalvages(salvages: Salvage[]) {
 		this.salvages = salvages;
+		this.resetMapObjectsByPosition();
+		this.resetMyMapObjectsByPosition();
+	}
+
+	updateMineralPackets(mineralPackets: MineralPacket[]) {
+		this.mineralPackets = mineralPackets;
 		this.resetMapObjectsByPosition();
 		this.resetMyMapObjectsByPosition();
 	}

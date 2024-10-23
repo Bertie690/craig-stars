@@ -2,7 +2,7 @@
 	import { andCommaList } from '$lib/andCommandList';
 	import { getGameContext } from '$lib/services/GameContext';
 	import { absSum } from '$lib/types/Hab';
-	import { None } from '$lib/types/MapObject';
+	import { None } from '$lib/types/Constants';
 	import { MessageType, type Message } from '$lib/types/Message';
 	import FallbackMessageDetail from './FallbackMessageDetail.svelte';
 	import FleetEngineStrainMessageDetail from './FleetEngineStrainMessageDetail.svelte';
@@ -115,17 +115,17 @@
 	{@const mineFieldPosition = `(${message.spec.targetPosition?.x ?? 0}, ${message.spec.targetPosition?.y || 0})`}
 	{#if message.targetPlayerNum === $player.num}
 		<!-- our fleet swept -->
-		{message.targetName} has has swept {message.spec.amount} mines from a mine field at {mineFieldPosition}
+		{message.targetName} has has swept {message.spec.amount ?? 0} mines from a mine field at {mineFieldPosition}
 	{:else}
 		<!-- our minefield was swept by fleet -->
-		{message.targetName} has has swept {message.spec.amount} mines from your mine field at {mineFieldPosition}
+		{message.targetName} has has swept {message.spec.amount ?? 0} mines from your mine field at {mineFieldPosition}
 	{/if}
 {:else if message.type === MessageType.FleetLaidMines}
 	{@const mineField = $universe.getMineField(message.spec.targetPlayerNum, message.spec.targetNum)}
 	{#if mineField?.numMines === message.spec.amount}
 		{message.targetName} has has dispensed {message.spec.amount} mines.
 	{:else}
-		{message.targetName} has increased {mineField?.name} by {message.spec.amount} mines.
+		{message.targetName} has increased {message.spec.targetName} by {message.spec.amount} mines.
 	{/if}
 {:else if message.type === MessageType.FleetPatrolTargeted}
 	Your patrolling {message.targetName} has targeted {message.spec.targetName} to intercept.

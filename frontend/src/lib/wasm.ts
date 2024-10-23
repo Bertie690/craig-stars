@@ -1,9 +1,11 @@
 import type { Race } from '$lib/types/Race';
 import { addError } from './services/Errors';
+import type { Cost } from './types/Cost';
 import { type Planet } from './types/Planet';
 import type { Player } from './types/Player';
 import type { Rules } from './types/Rules';
 import type { ShipDesign, Spec as ShipDesignSpec } from './types/ShipDesign';
+import type { TechLevel } from './types/TechLevel';
 
 export type CS = {
 	enableDebug: () => void;
@@ -11,7 +13,9 @@ export type CS = {
 	setPlayer: (player: Player) => void;
 	setDesigns: (designs: ShipDesign[]) => void;
 	calculateRacePoints: (race: Race) => number | undefined;
+	getResearchCost: (techLevel: TechLevel) => number | undefined;
 	computeShipDesignSpec: (design: ShipDesign) => ShipDesignSpec | undefined;
+	starbaseUpgradeCost: (design: ShipDesign, newDesign: ShipDesign) => Cost | undefined;
 	estimateProduction: (planet: Planet) => Planet | undefined;
 };
 
@@ -98,14 +102,6 @@ class CSWasmWrapper implements CS {
 		this.checkError();
 	}
 
-	estimateProduction(planet: Planet): Planet | undefined {
-		const result = this.wasm.estimateProduction(planet);
-		if (this.checkError()) {
-			return undefined;
-		}
-		return result;
-	}
-
 	computeShipDesignSpec(design: ShipDesign): ShipDesignSpec | undefined {
 		const result = this.wasm.computeShipDesignSpec(design);
 		if (this.checkError()) {
@@ -114,8 +110,32 @@ class CSWasmWrapper implements CS {
 		return result;
 	}
 
+	starbaseUpgradeCost(design: ShipDesign, newDesign: ShipDesign): Cost | undefined {
+		const result = this.wasm.starbaseUpgradeCost(design, newDesign)
+		if (this.checkError()) {
+			return undefined;
+		}
+		return result;
+	}
+
 	calculateRacePoints(race: Race): number | undefined {
 		const result = this.wasm.calculateRacePoints(race);
+		if (this.checkError()) {
+			return undefined;
+		}
+		return result;
+	}
+
+	estimateProduction(planet: Planet): Planet | undefined {
+		const result = this.wasm.estimateProduction(planet);
+		if (this.checkError()) {
+			return undefined;
+		}
+		return result;
+	}
+
+	getResearchCost(techLevel: TechLevel): number | undefined {
+		const result = this.wasm.getResearchCost(techLevel);
 		if (this.checkError()) {
 			return undefined;
 		}

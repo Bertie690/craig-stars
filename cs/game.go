@@ -159,10 +159,8 @@ const (
 type GameStartMode string
 
 const (
-	GameStartModeNormal   GameStartMode = ""
-	GameStartModeMidGame  GameStartMode = "MidGame"
-	GameStartModeLateGame GameStartMode = "LateGame"
-	GameStartModeEndGame  GameStartMode = "EndGame"
+	GameStartModeNormal GameStartMode = ""
+	GameStartModeMax    GameStartMode = "Max"
 )
 
 type GameState string
@@ -460,6 +458,10 @@ func (g *FullGame) computeSpecs() error {
 		wormhole.Spec = computeWormholeSpec(wormhole, rules)
 	}
 
+	// compute the research specs after all the planet specs are computed
+	for _, player := range g.Players {
+		player.Spec.PlayerResearchSpec = computePlayerResearchSpec(player, rules, g.Planets)
+	}
 	return nil
 
 }

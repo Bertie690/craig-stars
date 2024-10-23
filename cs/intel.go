@@ -27,6 +27,7 @@ type discoverer interface {
 	discoverMineField(mineField *MineField)
 	discoverMineralPacket(rules *Rules, mineralPacket *MineralPacket, packetPlayer *Player, target *Planet)
 	discoverMineralPacketScanner(mineralPacket *MineralPacket)
+	discoverMineralPacketCargo(mineralPacket *MineralPacket)
 	discoverSalvage(salvage *Salvage)
 	discoverWormhole(wormhole *Wormhole)
 	discoverWormholeLink(wormhole1, wormhole2 *Wormhole)
@@ -65,8 +66,9 @@ func newDiscovererWithAllies(log zerolog.Logger, player *Player, players []*Play
 		}
 	}
 
+	discoverLogger := log.With().Int("Player", player.Num).Logger()
 	return &discovererWithAllies{
-		playerDiscoverer: discover{log, player},
+		playerDiscoverer: discover{discoverLogger, player},
 		allyDiscoverers:  mapSharePlayers,
 	}
 }
@@ -632,6 +634,14 @@ func (d *discover) discoverMineralPacketScanner(mineralPacket *MineralPacket) {
 	}
 }
 
+func (d *discover) discoverMineralPacketCargo(mineralPacket *MineralPacket) {
+	player := d.player
+	existingIntel := player.getMineralPacketIntel(mineralPacket.PlayerNum, mineralPacket.Num)
+	if existingIntel != nil {
+		existingIntel.Cargo = mineralPacket.Cargo
+	}
+}
+
 // discover a player's design. This is a noop if we already know about
 // the design and aren't discovering slots
 func (d *discover) discoverDesign(design *ShipDesign, discoverSlots bool) {
@@ -987,6 +997,15 @@ func (d *discovererWithAllies) discoverMineralPacketScanner(mineralPacket *Miner
 	for _, allyDiscoverer := range d.allyDiscoverers {
 		if allyDiscoverer.player.Num != mineralPacket.PlayerNum {
 			allyDiscoverer.discoverMineralPacketScanner(mineralPacket)
+		}
+	}
+}
+
+func (d *discovererWithAllies) discoverMineralPacketCargo(mineralPacket *MineralPacket) {
+	d.playerDiscoverer.discoverMineralPacketCargo(mineralPacket)
+	for _, allyDiscoverer := range d.allyDiscoverers {
+		if allyDiscoverer.player.Num != mineralPacket.PlayerNum {
+			allyDiscoverer.discoverMineralPacketCargo(mineralPacket)
 		}
 	}
 }

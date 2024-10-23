@@ -2,20 +2,15 @@ import type { DesignFinder, Universe } from '$lib/services/Universe';
 import { get as pluck } from 'lodash-es';
 import { totalCargo, type Cargo } from './Cargo';
 import type { Cost } from './Cost';
-import {
-	Infinite,
-	MapObjectType,
-	None,
-	owned,
-	ownedBy,
-	StargateWarpSpeed,
-	type MapObject,
-	type MovingMapObject
-} from './MapObject';
+import { MapObjectType, owned, ownedBy, type MapObject, type MovingMapObject } from './MapObject';
+import { StargateWarpSpeed } from './Constants';
+import { None } from './Constants';
 import type { MessageTargetType } from './Message';
 import type { MineFieldType } from './MineField';
+import type { MineralPacket } from './MineralPacket';
 import type { Planet } from './Planet';
 import type { Player } from './Player';
+import type { Salvage } from './Salvage';
 import type { ShipDesign } from './ShipDesign';
 import type { Engine } from './Tech';
 import { distance, equal, type Vector } from './Vector';
@@ -179,6 +174,8 @@ export type Spec = {
 	canJump?: boolean; // TODO: actually implement this
 	maxPopulation?: number;
 };
+
+export type CargoTransferTarget = Fleet | Planet | Salvage | MineralPacket | undefined;
 
 export function emptyTransportTasks(): WaypointTransportTasks {
 	return {
@@ -653,8 +650,9 @@ export class CommandedFleet implements Fleet {
 		maxSafeSpeed: number
 	): number {
 		// start at one above free speed and add to it until we run out of fuel
-		let speed: number;
-		for (speed = freeSpeed + 1; speed <= maxSafeSpeed; speed++) {
+		let speed = freeSpeed;
+		for (let i = speed + 1; i <= maxSafeSpeed; i++) {
+			speed = i;
 			const fuelUsed = this.getFuelCost(
 				designFinder,
 				fuelEfficiencyOffset,
@@ -668,6 +666,8 @@ export class CommandedFleet implements Fleet {
 				break;
 			}
 		}
+
+		console.log('max speed for fuel/safety', speed);
 
 		const idealSpeed = this.spec?.engine?.idealSpeed ?? 5;
 		const idealFuelUsed = this.getFuelCost(
@@ -794,6 +794,34 @@ export class CommandedFleet implements Fleet {
 		}
 		return 0;
 	}
+
+	/**
+	 *
+	 * @param universe
+	 * @returns The target for what we should transfer cargo to, based on wp0
+	 */
+	getCargoTransferTarget(universe: Universe): CargoTransferTarget {
+		const wp0 = this.waypoints[0];
+		if (
+			wp0.targetNum == undefined ||
+			wp0.targetNum == 0 ||
+			wp0.targetType == undefined ||
+			wp0.targetType == MapObjectType.None
+		) {
+			// return some salvage at this position
+			return universe.getSalvageAtPosition(this);
+		}
+		switch (wp0.targetType) {
+			case MapObjectType.Planet:
+				return universe.getPlanet(wp0.targetNum);
+			case MapObjectType.Fleet:
+				return universe.getFleet(wp0.targetPlayerNum, wp0.targetNum);
+			case MapObjectType.Salvage:
+				return universe.getSalvageAtPosition(this);
+			case MapObjectType.MineralPacket:
+				return universe.getMineralPacket(wp0.targetPlayerNum ?? 0, wp0.targetNum);
+		}
+	}
 }
 
 export function getDamagePercentForToken(token: ShipToken, design: ShipDesign | undefined): number {
@@ -906,6 +934,22 @@ export const getDestination = (fleet: Fleet, universe: Universe) => {
 	return '--';
 };
 
+export const getEta = (fleet: Fleet) => {
+	if (fleet.waypoints?.length && fleet.waypoints?.length > 1) {
+		if (fleet.waypoints[1].warpSpeed === 0) {
+			return -1;
+		} else if (fleet.waypoints[1].warpSpeed === StargateWarpSpeed) {
+			return 1;
+		} else {
+			return Math.ceil(
+				Math.floor(distance(fleet.waypoints[0].position, fleet.waypoints[1].position)) /
+					(fleet.waypoints[1].warpSpeed * fleet.waypoints[1].warpSpeed)
+			);
+		}
+	}
+	return 0;
+};
+
 export function getTokenCount(mo: MapObject) {
 	if (mo.type == MapObjectType.Fleet) {
 		const fleet = mo as Fleet;
@@ -932,6 +976,8 @@ export function fleetsSortBy(
 			return (a, b) => getLocation(a, universe).localeCompare(getLocation(b, universe));
 		case 'destination':
 			return (a, b) => getDestination(a, universe).localeCompare(getDestination(b, universe));
+		case 'eta':
+			return (a, b) => getEta(a) - getEta(b);
 		case 'cargo':
 			return (a, b) => totalCargo(a.cargo) - totalCargo(b.cargo);
 		case 'mass':

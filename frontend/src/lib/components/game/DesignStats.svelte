@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { Infinite } from '$lib/types/MapObject';
+	import { Infinite } from '$lib/types/Constants';
 	import { MineFieldTypes } from '$lib/types/MineField';
 	import type { Spec } from '$lib/types/ShipDesign';
-	import { NoScanner } from '$lib/types/Tech';
+	import { NoScanner } from '$lib/types/Constants';
 
 	export let spec: Spec;
 
@@ -83,9 +83,9 @@
 		<div class="flex justify-between">
 			<div class="font-semibold mr-5">Torpedo Bonus/Jamming</div>
 			<div>
-				{((spec.torpedoBonus ?? 0) * 100).toFixed()}%/{(
-					(spec.torpedoJamming ?? 0) * 100
-				).toFixed()}%
+				{((spec.torpedoBonus ?? 0) * 100).toFixed()}%/{((spec.torpedoJamming ?? 0) * 100).toFixed(
+					2
+				)}%
 			</div>
 		</div>
 	{/if}
@@ -93,7 +93,7 @@
 		<div class="flex justify-between">
 			<div class="font-semibold mr-5">Beam Bonus/Defense</div>
 			<div>
-				x{(spec.beamBonus ?? 1).toFixed(1)}/x{(spec.beamDefense ?? 1).toFixed(1)}
+				x{(spec.beamBonus ?? 1).toFixed(2)}/x{(spec.beamDefense ?? 1).toFixed(2)}
 			</div>
 		</div>
 	{/if}

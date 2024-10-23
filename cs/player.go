@@ -116,13 +116,17 @@ const (
 )
 
 type PlayerSpec struct {
-	PlanetaryScanner                  TechPlanetaryScanner                `json:"planetaryScanner"`
-	Defense                           TechDefense                         `json:"defense"`
-	Terraform                         map[TerraformHabType]*TechTerraform `json:"terraform"`
-	ResourcesPerYear                  int                                 `json:"resourcesPerYear"`
-	ResourcesPerYearResearch          int                                 `json:"resourcesPerYearResearch"`
-	ResourcesPerYearResearchEstimated int                                 `json:"resourcesPerYearResearchEstimated"`
-	CurrentResearchCost               int                                 `json:"currentResearchCost"`
+	PlayerResearchSpec
+	PlanetaryScanner TechPlanetaryScanner                `json:"planetaryScanner"`
+	Defense          TechDefense                         `json:"defense"`
+	Terraform        map[TerraformHabType]*TechTerraform `json:"terraform"`
+}
+
+type PlayerResearchSpec struct {
+	ResourcesPerYear                  int `json:"resourcesPerYear"`
+	ResourcesPerYearResearch          int `json:"resourcesPerYearResearch"`
+	ResourcesPerYearResearchEstimated int `json:"resourcesPerYearResearchEstimated"`
+	CurrentResearchCost               int `json:"currentResearchCost"`
 }
 
 type PlayerScore struct {
@@ -504,7 +508,6 @@ func (p *Player) getSalvageIntel(num int) *SalvageIntel {
 }
 
 func computePlayerSpec(player *Player, rules *Rules, planets []*Planet) PlayerSpec {
-	researcher := NewResearcher(rules)
 	techs := rules.techs
 	spec := PlayerSpec{
 		PlanetaryScanner: *techs.GetBestPlanetaryScanner(player),
@@ -516,6 +519,14 @@ func computePlayerSpec(player *Player, rules *Rules, planets []*Planet) PlayerSp
 			TerraformHabTypeRad:  techs.GetBestTerraform(player, TerraformHabTypeRad),
 		},
 	}
+
+	spec.PlayerResearchSpec = computePlayerResearchSpec(player, rules, planets)
+	return spec
+}
+
+func computePlayerResearchSpec(player *Player, rules *Rules, planets []*Planet) PlayerResearchSpec {
+	researcher := NewResearcher(rules)
+	spec := PlayerResearchSpec{}
 
 	for _, planet := range planets {
 		if planet.OwnedBy(player.Num) {
@@ -625,7 +636,8 @@ func (p *Player) defaultPlans() PlayerPlans {
 		ContributesOnlyLeftoverToResearch: true,
 	}
 
-	// no min terraforming as _usually_ it's faster to build factories first (or at least for lower-value reds where the pop loss actually matters)
+	// no min terraforming as _usually_ it's faster to build factories first
+	// or at least for lower-value reds where the pop loss actually matters
 
 	if !p.Race.Spec.InnateResources {
 		defaultProductionPlan.Items = append(defaultProductionPlan.Items,
@@ -659,7 +671,7 @@ func (p *Player) defaultPlans() PlayerPlans {
 			},
 			{
 				Num:             1,
-				Name:            "KillStarbase",
+				Name:            "Kill Starbase",
 				PrimaryTarget:   BattleTargetStarbase,
 				SecondaryTarget: BattleTargetArmedShips,
 				Tactic:          BattleTacticMaximizeDamageRatio,
@@ -717,7 +729,7 @@ func (p *Player) defaultPlans() PlayerPlans {
 				},
 			},
 			{
-				Num:  2,
+				Num:  3,
 				Name: "Wait Load",
 				Tasks: WaypointTransportTasks{
 					Fuel:      WaypointTransportTask{Action: TransportActionLoadOptimal},
@@ -727,14 +739,14 @@ func (p *Player) defaultPlans() PlayerPlans {
 				},
 			},
 			{
-				Num:  3,
+				Num:  4,
 				Name: "Load Colonists",
 				Tasks: WaypointTransportTasks{
 					Colonists: WaypointTransportTask{Action: TransportActionLoadAll},
 				},
 			},
 			{
-				Num:  4,
+				Num:  5,
 				Name: "Unload Colonists",
 				Tasks: WaypointTransportTasks{
 					Colonists: WaypointTransportTask{Action: TransportActionUnloadAll},

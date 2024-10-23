@@ -96,6 +96,21 @@ func calculateRacePoints(args []js.Value) interface{} {
 
 // wasm wrapper for calculating race points
 // takes one argument, the race
+func getResearchCost(args []js.Value) interface{} {
+	if len(args) != 1 {
+		return wasm.NewError(fmt.Errorf("number of arguments doesn't match"))
+	}
+
+	techLevel := wasm.GetTechLevel(args[0])
+
+	resources := ctx.player.GetResearchCost(&ctx.rules, techLevel)
+	log.Debug().Msgf("calculated research cost for %v: %d", techLevel, resources)
+
+	return js.ValueOf(resources)
+}
+
+// wasm wrapper for calculating race points
+// takes one argument, the race
 func computeShipDesignSpec(args []js.Value) interface{} {
 	if len(args) != 1 {
 		return wasm.NewError(fmt.Errorf("number of arguments doesn't match"))
@@ -110,6 +125,30 @@ func computeShipDesignSpec(args []js.Value) interface{} {
 
 	o := js.ValueOf(map[string]any{})
 	wasm.SetShipDesignSpec(o, &spec)
+
+	return o
+}
+
+// wasm wrapper for calculating race points
+// takes one argument, the race
+func starbaseUpgradeCost(args []js.Value) interface{} {
+	if len(args) != 2 {
+		return wasm.NewError(fmt.Errorf("number of arguments doesn't match"))
+	}
+
+	design := wasm.GetShipDesign(args[0])
+	newDesign := wasm.GetShipDesign(args[1])
+
+	costCalculatoor := cs.NewCostCalculator()
+	cost, err := costCalculatoor.StarbaseUpgradeCost(&ctx.rules, ctx.player.TechLevels, ctx.player.Race.Spec, &design, &newDesign)
+	if err != nil {
+		return wasm.NewError(fmt.Errorf("unable to calculate starbase upgrade cost %v", err))
+	}
+
+	log.Debug().Msgf("computed starbase upgrade cost for design %s -> %s %v", design.Name, newDesign.Name, cost)
+
+	o := js.ValueOf(map[string]any{})
+	wasm.SetCost(o, &cost)
 
 	return o
 }
@@ -159,7 +198,9 @@ func main() {
 	wasm.ExposeFunction("setDesigns", setDesigns)
 	wasm.ExposeFunction("enableDebug", enableDebug)
 	wasm.ExposeFunction("calculateRacePoints", calculateRacePoints)
+	wasm.ExposeFunction("getResearchCost", getResearchCost)
 	wasm.ExposeFunction("computeShipDesignSpec", computeShipDesignSpec)
+	wasm.ExposeFunction("starbaseUpgradeCost", starbaseUpgradeCost)
 	wasm.ExposeFunction("estimateProduction", estimateProduction)
 	wasm.Ready()
 
