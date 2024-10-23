@@ -73,29 +73,18 @@ var MysteryTraderRewardParts = []MysteryTraderRewardType{
 
 func (t MysteryTraderRewardType) IsPart() bool {
 	switch t {
-	case MysteryTraderRewardEngine:
-		fallthrough
-	case MysteryTraderRewardBomb:
-		fallthrough
-	case MysteryTraderRewardArmor:
-		fallthrough
-	case MysteryTraderRewardShield:
-		fallthrough
-	case MysteryTraderRewardElectrical:
-		fallthrough
-	case MysteryTraderRewardMechanical:
-		fallthrough
-	case MysteryTraderRewardTorpedo:
-		fallthrough
-	case MysteryTraderRewardMineRobot:
-		fallthrough
-	case MysteryTraderRewardShipHull:
-		fallthrough
-	case MysteryTraderRewardBeamWeapon:
-		fallthrough
-	case MysteryTraderRewardGenesis:
-		fallthrough
-	case MysteryTraderRewardJumpGate:
+	case MysteryTraderRewardEngine,
+		MysteryTraderRewardBomb,
+		MysteryTraderRewardArmor,
+		MysteryTraderRewardShield,
+		MysteryTraderRewardElectrical,
+		MysteryTraderRewardMechanical,
+		MysteryTraderRewardTorpedo,
+		MysteryTraderRewardMineRobot,
+		MysteryTraderRewardShipHull,
+		MysteryTraderRewardBeamWeapon,
+		MysteryTraderRewardGenesis,
+		MysteryTraderRewardJumpGate:
 		return true
 	}
 	return false
@@ -113,7 +102,7 @@ func (t MysteryTraderRewardType) Category() TechCategory {
 		return TechCategoryShield
 	case MysteryTraderRewardElectrical:
 		return TechCategoryElectrical
-	case MysteryTraderRewardMechanical:
+	case MysteryTraderRewardMechanical, MysteryTraderRewardJumpGate:
 		return TechCategoryMechanical
 	case MysteryTraderRewardTorpedo:
 		return TechCategoryTorpedo
@@ -125,8 +114,6 @@ func (t MysteryTraderRewardType) Category() TechCategory {
 		return TechCategoryBeamWeapon
 	case MysteryTraderRewardGenesis:
 		return TechCategoryPlanetary
-	case MysteryTraderRewardJumpGate:
-		return TechCategoryMechanical
 	}
 	return TechCategoryNone
 }
@@ -340,7 +327,7 @@ func generateMysteryTraderReward(rules *Rules, year int, warpSpeed int) MysteryT
 	reward := MysteryTraderRewardResearch
 
 	if rules.random.Intn(10) < chance {
-		// roll a 10 sided die, if it's less than our starting chance
+		// roll a 10 sided die, if it's less than our starting chance it's a non-part reward
 		// 5 out of 6 traders will have research, the others will give a ship
 		if rules.random.Intn(6) == 5 {
 			reward = MysteryTraderRewardLifeboat
@@ -447,7 +434,7 @@ func (mt *MysteryTrader) meet(rules *Rules, game *Game, fleet *Fleet, player *Pl
 
 		if rewardType == MysteryTraderRewardResearch && player.TechLevels.Min() == rules.MaxTechLevel {
 			if rules.random.Intn(rules.MysteryTraderRules.ChanceMaxTechGetsPart) > 0 {
-				// player gets nothing
+				// player gets nothing :O
 				return MysteryTraderReward{}
 			}
 			// player is maxed on tech, give them a part

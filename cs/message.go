@@ -183,7 +183,6 @@ const (
 	PlayerMessagePlanetBuiltGenesisDevice
 	PlayerMessagePlayerAcquirablePartGainedScrapFleet
 	PlayerMessagePlayerAcquirablePartGainedBattle
-
 )
 
 func newMessage(messageType PlayerMessageType) PlayerMessage {
@@ -934,9 +933,7 @@ func (m *messageClient) playerGainTechLevel(player *Player, field TechField, lev
 func (m *messageClient) playerTechGained(player *Player, field TechField, tech *Tech) {
 	var text string
 	switch tech.Category {
-	case TechCategoryShipHull:
-		fallthrough
-	case TechCategoryStarbaseHull:
+	case TechCategoryShipHull, TechCategoryStarbaseHull:
 		text = fmt.Sprintf("Your recent breakthrough in %v has also given you the %s hull type. To build ships with this design, go to Commands -> Ship Designer and select Create New Design.", field, tech.Name)
 	case TechCategoryPlanetaryDefense:
 		text = fmt.Sprintf("Your recent breakthrough in %v has also taught you how to build %s defenses. All existing planetary defenses have been upgraded to the new technology.", field, tech.Name)
