@@ -35,6 +35,7 @@ const (
 	MysteryTraderRewardMineRobot  MysteryTraderRewardType = "MineRobot"
 	MysteryTraderRewardShipHull   MysteryTraderRewardType = "ShipHull"
 	MysteryTraderRewardBeamWeapon MysteryTraderRewardType = "BeamWeapon"
+	MysteryTraderRewardMineLayer  MysteryTraderRewardType = "MineLayer"
 	MysteryTraderRewardGenesis    MysteryTraderRewardType = "Genesis"
 	MysteryTraderRewardJumpGate   MysteryTraderRewardType = "JumpGate"
 	MysteryTraderRewardLifeboat   MysteryTraderRewardType = "Lifeboat"
@@ -52,6 +53,7 @@ var MysteryTraderRewards = []MysteryTraderRewardType{
 	MysteryTraderRewardTorpedo,
 	MysteryTraderRewardBeamWeapon,
 	MysteryTraderRewardMineRobot,
+	// MysteryTraderRewardMineLayer, // we don't have mine layers yet 
 	MysteryTraderRewardShipHull,
 	MysteryTraderRewardGenesis,
 	MysteryTraderRewardJumpGate,
@@ -68,6 +70,7 @@ var MysteryTraderRewardParts = []MysteryTraderRewardType{
 	MysteryTraderRewardTorpedo,
 	MysteryTraderRewardBeamWeapon,
 	MysteryTraderRewardMineRobot,
+	// MysteryTraderRewardMineLayer, // we don't have mine layers yet 
 	MysteryTraderRewardShipHull,
 }
 
@@ -108,6 +111,8 @@ func (t MysteryTraderRewardType) Category() TechCategory {
 		return TechCategoryTorpedo
 	case MysteryTraderRewardMineRobot:
 		return TechCategoryMineRobot
+	case MysteryTraderRewardMineLayer:
+		return TechCategoryMineLayer
 	case MysteryTraderRewardShipHull:
 		return TechCategoryShipHull
 	case MysteryTraderRewardBeamWeapon:
